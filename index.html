@@ -129,7 +129,7 @@
                 <div class="flex-grow max-w-lg mx-auto md:mx-0 w-full">
                     <div class="relative flex items-center shadow-sm">
                         <i data-lucide="search" class="absolute left-4 h-5 w-5 text-gray-400"></i>
-                        <input type="text" id="global-search" oninput="handleSearch(this.value)" placeholder="Search for students or instructors..." class="w-full pl-11 pr-16 py-3 bg-white rounded-full text-sm text-[#292929] placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all font-medium">
+                        <input type="text" id="global-search" oninput="handleSearch(this.value)" placeholder="Search for students, classes or instructors..." class="w-full pl-11 pr-16 py-3 bg-white rounded-full text-sm text-[#292929] placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all font-medium">
                         <button onclick="clearSearch()" class="absolute right-2 bg-gray-100 hover:bg-gray-200 text-gray-600 p-1.5 rounded-full transition-colors"><i data-lucide="x" class="h-4 w-4"></i></button>
                     </div>
                 </div>
@@ -145,6 +145,9 @@
         <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-200 flex flex-col z-20">
             <button onclick="switchTab('dashboard'); toggleMobileMenu();" id="mob-tab-dashboard" class="mobile-nav-btn active p-4 text-left font-bold text-gray-700 border-b border-gray-100 flex items-center gap-3 border-l-4 border-transparent transition-all">
                 <i data-lucide="layout-dashboard" class="h-5 w-5"></i> Overview
+            </button>
+            <button onclick="switchTab('classes'); toggleMobileMenu();" id="mob-tab-classes" class="mobile-nav-btn p-4 text-left font-bold text-gray-700 border-b border-gray-100 flex items-center gap-3 border-l-4 border-transparent transition-all">
+                <i data-lucide="calendar-days" class="h-5 w-5"></i> Classes / Groups
             </button>
             <button onclick="switchTab('students'); toggleMobileMenu();" id="mob-tab-students" class="mobile-nav-btn p-4 text-left font-bold text-gray-700 border-b border-gray-100 flex items-center gap-3 border-l-4 border-transparent transition-all">
                 <i data-lucide="users" class="h-5 w-5"></i> Students Directory
@@ -164,6 +167,9 @@
             <div class="py-3 flex gap-2">
                 <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
                     <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Overview
+                </button>
+                <button onclick="switchTab('classes')" id="tab-classes" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="calendar-days" class="h-4 w-4"></i> Classes
                 </button>
                 <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
                     <i data-lucide="users" class="h-4 w-4"></i> Students
@@ -283,6 +289,64 @@
             </div>
         </div>
 
+        <!-- ================= VIEW: CLASSES ================= -->
+        <div id="view-classes" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add/Edit Class Form -->
+                <div class="mc-card p-6 lg:col-span-1 h-fit order-2 lg:order-1 sticky top-24 border-t-4 border-t-[#292929]">
+                    <h3 class="text-xl font-black text-[#292929] mb-5 flex items-center gap-2" id="class-form-title">
+                        <i data-lucide="layers" class="h-6 w-6 text-[#292929]"></i> Create Group
+                    </h3>
+                    <form id="class-form" class="space-y-4" onsubmit="window.saveClass(event)">
+                        <input type="hidden" id="class-id">
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Class Name</label>
+                            <input type="text" id="c-name" placeholder="e.g. Monday Batch A" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Day & Time Schedule</label>
+                            <input type="text" id="c-schedule" placeholder="e.g. Mon 4:00 PM - 5:30 PM" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                        </div>
+
+                        <div class="p-4 bg-[#f8fafc] rounded-xl border border-gray-200">
+                            <label class="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider">Assign Instructors</label>
+                            <div id="c-teachers-container" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar bg-white p-2 rounded-lg border border-gray-100">
+                                <!-- Checkboxes injected by JS -->
+                                <p class="text-xs text-gray-400 italic">No instructors available yet.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 pt-3">
+                            <button type="submit" class="flex-1 bg-[#292929] hover:bg-black text-white py-3 rounded-xl text-sm font-bold shadow-md shadow-gray-400 transition-all active:scale-95">Save Group</button>
+                            <button type="button" onclick="window.resetClassForm()" class="px-5 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl text-sm font-bold transition-all">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Classes Data Table -->
+                <div class="mc-card p-6 lg:col-span-2 flex flex-col order-1 lg:order-2">
+                    <h3 class="text-xl font-black text-[#292929] mb-5">Classes & Groups Directory</h3>
+                    <div class="overflow-x-auto flex-grow rounded-xl border border-gray-200">
+                        <table class="w-full text-sm text-left whitespace-nowrap bg-white">
+                            <thead class="text-[11px] text-gray-500 uppercase bg-gray-50 font-bold tracking-wider">
+                                <tr>
+                                    <th class="px-5 py-4 border-b border-gray-200">Group Name & Schedule</th>
+                                    <th class="px-5 py-4 border-b border-gray-200">Instructors Assigned</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Total Pax</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="class-table-body" class="divide-y divide-gray-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ================= VIEW: STUDENTS ================= -->
         <div id="view-students" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -299,6 +363,14 @@
                             <input type="text" id="s-name" placeholder="Enter name (Lao/Eng)" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
                         </div>
                         
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Assign to Class/Group</label>
+                            <select id="s-classId" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all text-gray-700">
+                                <option value="">Unassigned (None)</option>
+                                <!-- Injected by JS -->
+                            </select>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Enroll Date</label>
@@ -373,7 +445,7 @@
                         <table class="w-full text-sm text-left whitespace-nowrap bg-white">
                             <thead class="text-[11px] text-gray-500 uppercase bg-gray-50 font-bold tracking-wider">
                                 <tr>
-                                    <th class="px-5 py-4 border-b border-gray-200">Student Name</th>
+                                    <th class="px-5 py-4 border-b border-gray-200">Student Name & Class</th>
                                     <th class="px-5 py-4 border-b border-gray-200">Status</th>
                                     <th class="px-5 py-4 border-b border-gray-200">Fee</th>
                                     <th class="px-5 py-4 border-b border-gray-200 text-right">Actions</th>
@@ -407,19 +479,22 @@
                             <input type="text" id="t-name" placeholder="Enter name" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Student Pax</label>
-                                <input type="number" id="t-students" min="0" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Total Sessions</label>
-                                <input type="number" id="t-sessions" min="1" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                        <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                            <p class="text-xs text-gray-500 italic mb-2 leading-tight">If assigned to Groups in the Classes tab, pax is auto-calculated. You can override below.</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Manual Pax</label>
+                                    <input type="number" id="t-students" min="0" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFC72C] outline-none text-sm font-medium transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Total Sessions</label>
+                                    <input type="number" id="t-sessions" min="1" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFC72C] outline-none text-sm font-medium transition-all">
+                                </div>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Schedule</label>
+                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Default Schedule</label>
                             <input type="text" id="t-schedule" required placeholder="e.g. Mon 4PM-6PM" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
                         </div>
 
@@ -438,7 +513,7 @@
                             <thead class="text-[11px] text-gray-500 uppercase bg-gray-50 font-bold tracking-wider">
                                 <tr>
                                     <th class="px-5 py-4 border-b border-gray-200">Instructor & Time</th>
-                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Pax</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Pax (Auto/Man)</th>
                                     <th class="px-5 py-4 border-b border-gray-200 text-center">Sessions</th>
                                     <th class="px-5 py-4 border-b border-gray-200 font-bold text-[#E31837]">Est. Pay</th>
                                     <th class="px-5 py-4 border-b border-gray-200 text-right">Actions</th>
@@ -581,6 +656,79 @@
         </div>
     </div>
 
+    <!-- ================= TEACHER ATTENDANCE MODAL ================= -->
+    <div id="teacher-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity opacity-0">
+        <div id="teacher-modal-content" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col border border-gray-100">
+            
+            <!-- Modal Header -->
+            <div class="bg-[#292929] relative p-6 pb-5 text-center shrink-0">
+                <button onclick="window.closeTeacherModal()" class="absolute top-4 right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                </button>
+                <div class="relative mx-auto w-16 h-16 bg-[#FFC72C] rounded-2xl flex items-center justify-center mb-3 shadow-lg transform rotate-3">
+                    <i data-lucide="user-check" class="h-8 w-8 text-[#292929]"></i>
+                </div>
+                <h2 id="t-modal-name" class="text-2xl font-black text-white tracking-wide">Instructor Name</h2>
+                <p id="t-modal-schedule" class="text-xs text-gray-400 font-bold mt-1 uppercase tracking-widest">Schedule Info</p>
+            </div>
+            
+            <!-- Modal Scrollable Body -->
+            <div class="p-6 overflow-y-auto flex-grow custom-scrollbar space-y-5 bg-[#fcfcfc]">
+                
+                <!-- Assigned Classes Info -->
+                <div class="bg-[#fff9e6] p-4 rounded-xl border border-[#FFC72C]/40 shadow-sm">
+                    <p class="text-xs font-black text-[#292929] uppercase tracking-wider mb-2 flex items-center gap-2"><i data-lucide="layers" class="h-4 w-4 text-[#E31837]"></i> Assigned Groups</p>
+                    <ul id="t-modal-classes" class="text-sm font-medium text-gray-700 space-y-1 list-disc list-inside pl-1">
+                        <!-- Injected -->
+                    </ul>
+                    <div class="mt-3 pt-3 border-t border-yellow-200 flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Auto-Computed Pax</span>
+                        <span id="t-modal-auto-pax" class="text-lg font-black text-[#E31837]">0</span>
+                    </div>
+                </div>
+
+                <!-- Attendance Stats -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-green-50 border border-green-100 p-3 rounded-xl text-center">
+                        <p class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Present Days</p>
+                        <p id="t-stat-present" class="text-2xl font-black text-green-700">0</p>
+                    </div>
+                    <div class="bg-red-50 border border-red-100 p-3 rounded-xl text-center">
+                        <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider">Absent Days</p>
+                        <p id="t-stat-absent" class="text-2xl font-black text-red-700">0</p>
+                    </div>
+                </div>
+
+                <!-- Attendance Tracker Section -->
+                <div class="pt-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-sm font-black text-[#292929] flex items-center gap-2 uppercase tracking-wide"><i data-lucide="calendar-check" class="h-4 w-4 text-[#FFC72C]"></i> Attendance Tracker</h4>
+                    </div>
+
+                    <!-- Add Attendance Form -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm space-y-2 mb-4">
+                        <div class="flex gap-2">
+                            <input type="date" id="t-att-date" class="w-1/2 px-2 py-1.5 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C]">
+                            <select id="t-att-status" class="w-1/2 px-2 py-1.5 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C]">
+                                <option value="Present">Present</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="t-att-remarks" placeholder="Remarks (optional)..." class="w-full px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C]">
+                            <button onclick="window.addTeacherAttendance()" class="shrink-0 bg-[#292929] hover:bg-black text-white px-3 py-1.5 rounded-lg transition-colors font-bold text-xs shadow-sm">Mark</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Attendance List -->
+                    <div id="t-attendance-list" class="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Items injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Application Logic with Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -607,12 +755,15 @@
         // In-memory state
         let students = [];
         let teachers = [];
+        let classesData = []; // NEW: Group/Classes state
         let searchTerm = "";
         let currentModalStudentId = null;
+        let currentModalTeacherId = null; // NEW: Teacher Modal tracking
         let systemLocked = false;
 
         const refreshIcons = () => setTimeout(() => lucide.createIcons(), 10);
         document.getElementById('current-year').textContent = new Date().getFullYear();
+        document.getElementById('t-att-date').valueAsDate = new Date(); // Default today for attendance
 
         // --- FIREBASE INITIALIZATION ---
         const initAuth = async () => {
@@ -647,9 +798,9 @@
 
         // Use public data paths so changes affect all devices globally
         function setupRealtimeListeners() {
-            // Collection paths using shared/public space to enable global sync
             const studentsRef = collection(db, 'artifacts', appId, 'public', 'data', 'students');
             const teachersRef = collection(db, 'artifacts', appId, 'public', 'data', 'teachers');
+            const classesRef = collection(db, 'artifacts', appId, 'public', 'data', 'classes'); // NEW
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general');
 
             // Listen to Students
@@ -663,18 +814,23 @@
             onSnapshot(teachersRef, (snapshot) => {
                 teachers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if(!systemLocked) window.renderAll();
+                if(currentModalTeacherId && !systemLocked) window.showTeacherDetails(currentModalTeacherId);
             }, (error) => console.error("Error fetching teachers:", error));
+
+            // Listen to Classes/Groups
+            onSnapshot(classesRef, (snapshot) => {
+                classesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if(!systemLocked) window.renderAll();
+            }, (error) => console.error("Error fetching classes:", error));
 
             // Listen to General Settings (Logo, Favicon, Lock State)
             onSnapshot(settingsRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // Handle Logo / Favicon Sync
                     if (data.clubLogo) {
                         document.getElementById('club-logo').src = data.clubLogo;
                         document.getElementById('dynamic-favicon').href = data.clubLogo;
-                        
                         let appleIcon = document.getElementById('dynamic-apple-icon');
                         if (!appleIcon) {
                             appleIcon = document.createElement('link');
@@ -685,18 +841,18 @@
                         appleIcon.href = data.clubLogo;
                     }
 
-                    // Handle System Lock State Sync Globally
                     if (data.isLocked !== undefined) {
                         systemLocked = data.isLocked;
                         const lockScreen = document.getElementById('lock-overlay');
                         if (systemLocked) {
                             lockScreen.classList.remove('hidden');
-                            window.closeModal(); // Close active modals if any
+                            window.closeModal(); 
+                            window.closeTeacherModal();
                             setTimeout(() => lockScreen.classList.remove('opacity-0'), 10);
                         } else {
                             lockScreen.classList.add('opacity-0');
                             setTimeout(() => lockScreen.classList.add('hidden'), 300);
-                            window.renderAll(); // Rerender data once unlocked
+                            window.renderAll(); 
                         }
                     }
                 }
@@ -726,7 +882,7 @@
             }
         };
 
-        // --- LOGO UPLOAD EVENT LISTENER (Saving to Firestore) ---
+        // --- LOGO UPLOAD EVENT LISTENER ---
         document.getElementById('logo-upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -734,42 +890,24 @@
                 reader.onload = async function(event) {
                     const img = new Image();
                     img.onload = async function() {
-                        // Compress Image via Canvas to fit Firestore Limits
                         const canvas = document.createElement('canvas');
                         const MAX_SIZE = 256;
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > MAX_SIZE) {
-                                height *= MAX_SIZE / width;
-                                width = MAX_SIZE;
-                            }
-                        } else {
-                            if (height > MAX_SIZE) {
-                                width *= MAX_SIZE / height;
-                                height = MAX_SIZE;
-                            }
-                        }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
+                        let width = img.width, height = img.height;
+                        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                        canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // Compress to WebP (small footprint)
                         const compressedDataUrl = canvas.toDataURL('image/webp', 0.85);
 
-                        // Update Local UI Instantly
                         document.getElementById('club-logo').src = compressedDataUrl;
                         document.getElementById('dynamic-favicon').href = compressedDataUrl;
                         
-                        // Save Compressed Image to Database
                         try {
                             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general');
                             await setDoc(settingsRef, { clubLogo: compressedDataUrl }, { merge: true });
                         } catch(err) {
-                            console.error("Error saving logo to Firebase:", err);
+                            console.error("Error saving logo:", err);
                             alert("Could not save the logo. Error: " + err.message);
                         }
                     };
@@ -779,59 +917,41 @@
             }
         });
 
-        // --- GLOBAL FUNCTIONS ---
-
-        // Mobile Menu Toggle
-        window.toggleMobileMenu = function() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        };
-
-        // Close Mobile Menu on Outside Click
+        // --- GLOBAL NAVIGATION ---
+        window.toggleMobileMenu = function() { document.getElementById('mobile-menu').classList.toggle('hidden'); };
         window.closeMobileMenuOnClickOutside = function() {
             const menu = document.getElementById('mobile-menu');
-            if (!menu.classList.contains('hidden')) {
-                menu.classList.add('hidden');
-            }
+            if (!menu.classList.contains('hidden')) menu.classList.add('hidden');
         };
         
         window.switchTab = function(tabId) {
-            // Desktop pills styling
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'bg-[#FFC72C]', 'text-[#292929]', 'border-[#FFC72C]'));
             const btn = document.getElementById(`tab-${tabId}`);
             if(btn) btn.classList.add('active');
 
-            // Mobile menu styling
             document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
             const mobBtn = document.getElementById(`mob-tab-${tabId}`);
             if(mobBtn) mobBtn.classList.add('active');
             
-            ['dashboard', 'students', 'teachers', 'history'].forEach(id => {
-                document.getElementById(`view-${id}`).classList.add('hidden');
+            ['dashboard', 'classes', 'students', 'teachers', 'history'].forEach(id => {
+                const el = document.getElementById(`view-${id}`);
+                if(el) el.classList.add('hidden');
             });
             
             const view = document.getElementById(`view-${tabId}`);
             if(view) view.classList.remove('hidden');
 
             window.location.hash = tabId;
-            if(tabId === 'history') window.renderAll();
+            if(tabId === 'history' || tabId === 'classes') window.renderAll();
         };
 
         const initialTab = window.location.hash.replace('#', '') || 'dashboard';
         window.switchTab(initialTab);
 
-        window.handleSearch = function(val) {
-            searchTerm = val.toLowerCase();
-            window.renderAll();
-        };
+        window.handleSearch = function(val) { searchTerm = val.toLowerCase(); window.renderAll(); };
+        window.clearSearch = function() { searchTerm = ""; const s = document.getElementById('global-search'); if(s) s.value = ""; window.renderAll(); };
 
-        window.clearSearch = function() {
-            searchTerm = "";
-            const searchInput = document.getElementById('global-search');
-            if(searchInput) searchInput.value = "";
-            window.renderAll();
-        };
-
+        // --- STUDENTS CRUD & FEES ---
         window.calculateStudentFee = function(isFounding, needsKit, isFree, manualDiscount) {
             if (isFree) return 0;
             let base = 70; 
@@ -846,16 +966,12 @@
             const needsKit = document.getElementById('s-kit').checked;
             const isFree = document.getElementById('s-free').checked;
             const manualDiscount = parseFloat(document.getElementById('s-discount').value) || 0;
-            
             const fee = window.calculateStudentFee(isFounding, needsKit, isFree, manualDiscount);
             document.getElementById('s-live-fee').textContent = fee.toFixed(2);
         };
-
-        // --- CRUD OPERATIONS ---
         
         window.saveStudent = async function(e) {
             e.preventDefault();
-
             const isFounding = document.getElementById('s-founding').checked;
             const needsKit = document.getElementById('s-kit').checked;
             const isFree = document.getElementById('s-free').checked;
@@ -863,6 +979,7 @@
             
             const studentObj = {
                 name: document.getElementById('s-name').value,
+                classId: document.getElementById('s-classId').value, // NEW: Assign to Class
                 enrollDate: document.getElementById('s-date').value,
                 termStart: document.getElementById('s-term-start').value,
                 termEnd: document.getElementById('s-term-end').value,
@@ -874,12 +991,10 @@
 
             const idStr = document.getElementById('student-id').value;
             const docId = idStr || Date.now().toString();
-
             if (idStr) {
                 const existing = students.find(s => s.id === idStr);
                 if (existing && existing.history) studentObj.history = existing.history;
             }
-
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', docId), studentObj);
                 window.resetStudentForm();
@@ -889,32 +1004,6 @@
         window.deleteStudent = async function(id) {
             if(confirm('Permanently delete this student record?')) {
                 try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', id.toString())); } 
-                catch(err) { console.error(err); }
-            }
-        };
-
-        window.saveTeacher = async function(e) {
-            e.preventDefault();
-
-            const teacherObj = {
-                name: document.getElementById('t-name').value,
-                studentsHandling: parseInt(document.getElementById('t-students').value) || 0,
-                sessions: parseInt(document.getElementById('t-sessions').value) || 1,
-                schedule: document.getElementById('t-schedule').value
-            };
-
-            const idStr = document.getElementById('teacher-id').value;
-            const docId = idStr || Date.now().toString();
-
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', docId), teacherObj);
-                window.resetTeacherForm();
-            } catch(err) { console.error(err); }
-        };
-
-        window.deleteTeacher = async function(id) {
-            if(confirm('Remove this instructor?')) {
-                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', id.toString())); } 
                 catch(err) { console.error(err); }
             }
         };
@@ -931,23 +1020,109 @@
         window.editStudent = function(id) {
             const s = students.find(s => s.id === id.toString());
             if(!s) return;
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
             document.getElementById('student-form-title').innerHTML = '<i data-lucide="edit-3" class="h-6 w-6 text-[#E31837]"></i> Update Cadet Record';
             document.getElementById('student-id').value = s.id;
             document.getElementById('s-name').value = s.name;
+            document.getElementById('s-classId').value = s.classId || ''; // Assign class
             document.getElementById('s-date').value = s.enrollDate;
             document.getElementById('s-term-start').value = s.termStart;
             document.getElementById('s-term-end').value = s.termEnd;
             document.getElementById('s-status').value = s.status;
-            
             document.getElementById('s-founding').checked = s.isFounding || false;
             document.getElementById('s-kit').checked = s.needsKit || false;
             document.getElementById('s-free').checked = s.isFree || false;
             document.getElementById('s-discount').value = s.manualDiscount || 0;
-            
             window.updateLiveFee();
             refreshIcons();
+        };
+
+        // --- CLASSES/GROUPS CRUD ---
+        window.saveClass = async function(e) {
+            e.preventDefault();
+            
+            // Gather selected teachers from checkboxes
+            const selectedTeachers = [];
+            document.querySelectorAll('.class-teacher-cb:checked').forEach(cb => selectedTeachers.push(cb.value));
+
+            const classObj = {
+                name: document.getElementById('c-name').value,
+                schedule: document.getElementById('c-schedule').value,
+                teacherIds: selectedTeachers
+            };
+
+            const idStr = document.getElementById('class-id').value;
+            const docId = idStr || Date.now().toString();
+
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'classes', docId), classObj);
+                window.resetClassForm();
+            } catch (err) { console.error("Error saving class", err); }
+        };
+
+        window.deleteClass = async function(id) {
+            if(confirm('Delete this group? Students will become unassigned.')) {
+                try { 
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'classes', id.toString())); 
+                    // Optional: loop students and remove this classId
+                } 
+                catch(err) { console.error(err); }
+            }
+        };
+
+        window.resetClassForm = function() {
+            document.getElementById('class-form').reset();
+            document.getElementById('class-id').value = '';
+            document.getElementById('class-form-title').innerHTML = '<i data-lucide="layers" class="h-6 w-6 text-[#292929]"></i> Create Group';
+            document.querySelectorAll('.class-teacher-cb').forEach(cb => cb.checked = false);
+            refreshIcons();
+        };
+
+        window.editClass = function(id) {
+            const c = classesData.find(cl => cl.id === id.toString());
+            if(!c) return;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('class-form-title').innerHTML = '<i data-lucide="edit-3" class="h-6 w-6 text-[#292929]"></i> Edit Group';
+            document.getElementById('class-id').value = c.id;
+            document.getElementById('c-name').value = c.name;
+            document.getElementById('c-schedule').value = c.schedule;
+            
+            // Check assigned teachers
+            document.querySelectorAll('.class-teacher-cb').forEach(cb => {
+                cb.checked = (c.teacherIds || []).includes(cb.value);
+            });
+            refreshIcons();
+        };
+
+        // --- TEACHERS CRUD ---
+        window.saveTeacher = async function(e) {
+            e.preventDefault();
+            const teacherObj = {
+                name: document.getElementById('t-name').value,
+                studentsHandling: parseInt(document.getElementById('t-students').value) || 0,
+                sessions: parseInt(document.getElementById('t-sessions').value) || 1,
+                schedule: document.getElementById('t-schedule').value,
+                attendance: [] // NEW: init attendance array
+            };
+            const idStr = document.getElementById('teacher-id').value;
+            const docId = idStr || Date.now().toString();
+            
+            if (idStr) {
+                const existing = teachers.find(t => t.id === idStr);
+                if (existing && existing.attendance) teacherObj.attendance = existing.attendance;
+            }
+
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', docId), teacherObj);
+                window.resetTeacherForm();
+            } catch(err) { console.error(err); }
+        };
+
+        window.deleteTeacher = async function(id) {
+            if(confirm('Remove this instructor?')) {
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', id.toString())); } 
+                catch(err) { console.error(err); }
+            }
         };
 
         window.resetTeacherForm = function() {
@@ -960,7 +1135,6 @@
         window.editTeacher = function(id) {
             const t = teachers.find(t => t.id === id.toString());
             if(!t) return;
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
             document.getElementById('teacher-form-title').innerHTML = '<i data-lucide="edit-3" class="h-6 w-6 text-[#FFC72C]"></i> Edit Instructor';
             document.getElementById('teacher-id').value = t.id;
@@ -971,7 +1145,110 @@
             refreshIcons();
         };
 
-        // --- MODAL & MONTHLY HISTORY LOGIC ---
+        // --- TEACHER MODAL (ATTENDANCE & AUTO-PAX) ---
+        window.showTeacherDetails = function(id) {
+            currentModalTeacherId = id.toString();
+            const t = teachers.find(tr => tr.id === currentModalTeacherId);
+            if(!t) return;
+
+            document.getElementById('t-modal-name').textContent = t.name;
+            document.getElementById('t-modal-schedule').textContent = t.schedule || 'No Default Schedule';
+
+            // Find classes assigned to this teacher
+            const assignedClasses = classesData.filter(c => (c.teacherIds || []).includes(t.id));
+            let totalAutoPax = 0;
+            const cListEl = document.getElementById('t-modal-classes');
+            cListEl.innerHTML = '';
+            
+            if(assignedClasses.length === 0) {
+                cListEl.innerHTML = `<li class="text-xs text-gray-400 italic py-1">No groups assigned yet.</li>`;
+            } else {
+                assignedClasses.forEach(c => {
+                    const classPax = students.filter(s => s.classId === c.id).length;
+                    totalAutoPax += classPax;
+                    cListEl.innerHTML += `<li class="py-0.5"><strong>${c.name}</strong> <span class="text-xs text-gray-500 ml-1">(${classPax} pax)</span></li>`;
+                });
+            }
+            document.getElementById('t-modal-auto-pax').textContent = totalAutoPax;
+
+            // Attendance Render
+            const att = t.attendance || [];
+            let pres = 0, abs = 0;
+            const attListEl = document.getElementById('t-attendance-list');
+            attListEl.innerHTML = '';
+            
+            if(att.length === 0) {
+                attListEl.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-2">No attendance records.</p>`;
+            } else {
+                [...att].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach((r, idx) => {
+                    if(r.status === 'Present') pres++; else abs++;
+                    const c = r.status === 'Present' ? 'text-green-600' : 'text-red-500';
+                    const rem = r.remarks ? `<p class="text-[10px] text-gray-500 italic mt-0.5">${r.remarks}</p>` : '';
+                    attListEl.innerHTML += `
+                        <div class="flex justify-between items-center text-xs p-2.5 bg-white border border-gray-100 shadow-sm rounded-lg">
+                            <div>
+                                <span class="font-black text-gray-700">${r.date}</span>
+                                ${rem}
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="font-black uppercase tracking-wide ${c}">${r.status}</span>
+                                <button onclick="window.removeTeacherAttendance(${idx})" class="text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="trash" class="h-4 w-4"></i></button>
+                            </div>
+                        </div>`;
+                });
+            }
+            document.getElementById('t-stat-present').textContent = pres;
+            document.getElementById('t-stat-absent').textContent = abs;
+
+            const modal = document.getElementById('teacher-modal');
+            const content = document.getElementById('teacher-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+            refreshIcons();
+        };
+
+        window.closeTeacherModal = function() {
+            currentModalTeacherId = null;
+            const modal = document.getElementById('teacher-modal');
+            const content = document.getElementById('teacher-modal-content');
+            modal.classList.add('opacity-0'); content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+
+        window.addTeacherAttendance = async function() {
+            if(!currentModalTeacherId) return;
+            const date = document.getElementById('t-att-date').value;
+            const status = document.getElementById('t-att-status').value;
+            const remarks = document.getElementById('t-att-remarks').value;
+            if(!date) return alert('Date required');
+
+            const t = teachers.find(tr => tr.id === currentModalTeacherId);
+            const newAtt = [...(t.attendance || []), { date, status, remarks }];
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', currentModalTeacherId), {
+                    attendance: newAtt
+                });
+                document.getElementById('t-att-remarks').value = '';
+            } catch(e) { console.error(e); }
+        };
+
+        window.removeTeacherAttendance = async function(index) {
+            if(!currentModalTeacherId) return;
+            const t = teachers.find(tr => tr.id === currentModalTeacherId);
+            const att = t.attendance || [];
+            const sorted = [...att].sort((a,b) => new Date(b.date) - new Date(a.date));
+            const toRemove = sorted[index];
+            const newAtt = att.filter(r => r !== toRemove);
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', currentModalTeacherId), {
+                    attendance: newAtt
+                });
+            } catch(e) { console.error(e); }
+        };
+
+        // --- STUDENT MODAL LOGIC ---
         window.showStudentDetails = function(id) {
             currentModalStudentId = id.toString();
             const s = students.find(st => st.id === currentModalStudentId);
@@ -994,8 +1271,14 @@
             if(s.isFounding) tagsHtml += `<span class="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-200">Founding (-$20)</span>`;
             if(s.needsKit) tagsHtml += `<span class="px-2.5 py-1 bg-orange-50 text-orange-700 rounded-lg text-xs font-bold border border-orange-200">Kit Rental (+$20)</span>`;
             if(s.manualDiscount > 0) tagsHtml += `<span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold border border-blue-200">Discount (-$${s.manualDiscount})</span>`;
-            
             if(!tagsHtml) tagsHtml = `<span class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold border border-gray-200">Base $70 / Own Kit</span>`;
+            
+            // Show assigned class name
+            const assignedClass = classesData.find(c => c.id === s.classId);
+            if(assignedClass) {
+                tagsHtml += `<span class="px-2.5 py-1 bg-yellow-50 text-yellow-800 rounded-lg text-xs font-bold border border-yellow-200"><i data-lucide="layers" class="h-3 w-3 inline mr-1"></i>${assignedClass.name}</span>`;
+            }
+            
             document.getElementById('modal-tags').innerHTML = tagsHtml;
 
             const histList = document.getElementById('modal-history-list');
@@ -1014,18 +1297,14 @@
                                 <span class="font-black uppercase tracking-wide ${c}">${rec.status}</span>
                                 <button onclick="window.removeMonthlyRecord(${idx})" class="text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="trash" class="h-4 w-4"></i></button>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
             }
 
             const modal = document.getElementById('student-modal');
             const content = document.getElementById('modal-content');
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
             refreshIcons();
         };
 
@@ -1033,8 +1312,7 @@
             currentModalStudentId = null;
             const modal = document.getElementById('student-modal');
             const content = document.getElementById('modal-content');
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
+            modal.classList.add('opacity-0'); content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
         };
 
@@ -1043,14 +1321,10 @@
             const month = document.getElementById('mh-month').value;
             const status = document.getElementById('mh-status').value;
             if (!month) return alert('Please select a month');
-
             const student = students.find(s => s.id === currentModalStudentId);
             const newHistory = [...(student.history || []), { month, status }];
-
             try {
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', currentModalStudentId), {
-                    history: newHistory
-                });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', currentModalStudentId), { history: newHistory });
                 document.getElementById('mh-month').value = '';
             } catch(e) { console.error(e); }
         };
@@ -1061,25 +1335,42 @@
             const history = student.history || [];
             const sorted = [...history].sort((a,b) => b.month.localeCompare(a.month));
             const itemToRemove = sorted[index];
-            
             const newHistory = history.filter(h => h !== itemToRemove);
-
             try {
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', currentModalStudentId), {
-                    history: newHistory
-                });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', currentModalStudentId), { history: newHistory });
             } catch(e) { console.error(e); }
         };
 
         // --- RENDER ALL VIEWS ---
         window.renderAll = function() {
-            // Abort rendering if locked to save CPU and keep data hidden
             if(systemLocked) return;
 
+            // PRE-RENDER PREP: Update Class Dropdowns & Checkboxes so form states aren't lost
+            const sClassSelect = document.getElementById('s-classId');
+            const currentSelectedClass = sClassSelect.value;
+            sClassSelect.innerHTML = `<option value="">Unassigned (None)</option>` + classesData.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            sClassSelect.value = currentSelectedClass;
+
+            const cTeachersContainer = document.getElementById('c-teachers-container');
+            // Keep track of what was checked
+            const currentlyCheckedTeachers = Array.from(document.querySelectorAll('.class-teacher-cb:checked')).map(cb => cb.value);
+            if(teachers.length === 0) {
+                cTeachersContainer.innerHTML = `<p class="text-xs text-gray-400 italic">No instructors available yet.</p>`;
+            } else {
+                cTeachersContainer.innerHTML = teachers.map(t => `
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors">
+                        <input type="checkbox" value="${t.id}" class="class-teacher-cb w-4 h-4 text-[#E31837] focus:ring-[#E31837] rounded border-gray-300" ${currentlyCheckedTeachers.includes(t.id) ? 'checked' : ''}>
+                        <span class="text-sm font-bold text-gray-700">${t.name}</span>
+                    </label>
+                `).join('');
+            }
+
+            // FILTER DATA
             const filteredStudents = students.filter(s => s.name.toLowerCase().includes(searchTerm));
             const filteredTeachers = teachers.filter(t => t.name.toLowerCase().includes(searchTerm));
+            const filteredClasses = classesData.filter(c => c.name.toLowerCase().includes(searchTerm));
 
-            // Dashboard Math
+            // COMPUTE & RENDER DASHBOARD & TEACHERS
             let totalRev = 0, unpaid = 0, foundingCount = 0, freeCount = 0, kitCount = 0;
             students.forEach(s => {
                 totalRev += s.fee;
@@ -1090,29 +1381,64 @@
             });
 
             let totalSalaries = 0;
-            const teacherListEl = document.getElementById('dash-teacher-list');
-            teacherListEl.innerHTML = '';
+            const dashTeacherListEl = document.getElementById('dash-teacher-list');
+            const tbodyT = document.getElementById('teacher-table-body');
+            dashTeacherListEl.innerHTML = ''; tbodyT.innerHTML = '';
             
-            teachers.forEach(t => {
-                // Fixed logic for 0 students handling
-                let classes = 0;
-                if (t.studentsHandling > 0 && t.studentsHandling <= 15) {
-                    classes = 1;
-                } else if (t.studentsHandling > 15) {
-                    classes = Math.ceil(t.studentsHandling / 10);
-                }
+            if(teachers.length === 0) {
+                dashTeacherListEl.innerHTML = `<tr><td colspan="3" class="px-4 py-6 text-center text-gray-400 font-bold text-sm">No instructors active.</td></tr>`;
+                tbodyT.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-gray-400 font-bold text-sm">No instructors found.</td></tr>`;
+            } else {
+                teachers.forEach(t => {
+                    // Compute Auto Pax from assigned classes
+                    const assignedClasses = classesData.filter(c => (c.teacherIds || []).includes(t.id));
+                    let autoPax = 0;
+                    assignedClasses.forEach(c => {
+                        autoPax += students.filter(s => s.classId === c.id).length;
+                    });
+                    
+                    // Final pax used for calculation (Auto overrides Manual if Auto > 0, otherwise use manual)
+                    // Wait, instruction: "it will auto compute or show to it total pax"
+                    // Let's use AutoPax if assigned to any class, else fallback to manual. Or let's sum them? 
+                    // Best: If they have autoPax, use it. If not, use manual.
+                    const finalPax = autoPax > 0 ? autoPax : t.studentsHandling;
 
-                const pay = ((classes * 10) + (t.studentsHandling * 1)) * t.sessions;
-                totalSalaries += pay;
+                    let classes = 0;
+                    if (finalPax > 0 && finalPax <= 15) classes = 1;
+                    else if (finalPax > 15) classes = Math.ceil(finalPax / 10);
+                    
+                    const pay = ((classes * 10) + (finalPax * 1)) * t.sessions;
+                    totalSalaries += pay;
 
-                teacherListEl.innerHTML += `
-                    <tr class="border-b border-gray-50 hover:bg-[#fff9e6] transition-colors">
-                        <td class="px-4 py-3 font-bold text-gray-700">${t.name}</td>
-                        <td class="px-4 py-3 text-gray-500 font-medium text-[11px] text-center">${t.studentsHandling} pax / ${t.sessions} sess.</td>
-                        <td class="px-4 py-3 text-right font-black text-[#E31837]">$${pay.toFixed(2)}</td>
-                    </tr>`;
-            });
-            if (teachers.length === 0) teacherListEl.innerHTML = `<tr><td colspan="3" class="px-4 py-6 text-center text-gray-400 font-bold text-sm">No instructors active.</td></tr>`;
+                    // Dash List
+                    dashTeacherListEl.innerHTML += `
+                        <tr class="border-b border-gray-50 hover:bg-[#fff9e6] transition-colors">
+                            <td class="px-4 py-3 font-bold text-gray-700">${t.name}</td>
+                            <td class="px-4 py-3 text-gray-500 font-medium text-[11px] text-center">${finalPax} pax / ${t.sessions} sess.</td>
+                            <td class="px-4 py-3 text-right font-black text-[#E31837]">$${pay.toFixed(2)}</td>
+                        </tr>`;
+
+                    // Full Teachers List (Filtered)
+                    if (t.name.toLowerCase().includes(searchTerm)) {
+                        const paxLabel = autoPax > 0 ? `<span class="text-[#E31837]">${finalPax} (Auto)</span>` : `${finalPax} (Man)`;
+                        tbodyT.innerHTML += `
+                            <tr class="hover:bg-[#fff9e6] border-b border-gray-100 transition-colors">
+                                <td class="px-5 py-4">
+                                    <p class="font-black text-[#292929]">${t.name}</p>
+                                    <p class="text-[10px] text-gray-500 font-bold tracking-wide flex items-center gap-1 mt-0.5 uppercase"><i data-lucide="clock" class="h-3 w-3 text-[#FFC72C]"></i> ${t.schedule}</p>
+                                </td>
+                                <td class="px-5 py-4 text-center font-black text-gray-700">${paxLabel}</td>
+                                <td class="px-5 py-4 text-center font-black text-gray-700">${t.sessions}</td>
+                                <td class="px-5 py-4 font-black text-[#E31837] text-sm">$${pay.toFixed(2)}</td>
+                                <td class="px-5 py-4 text-right whitespace-nowrap">
+                                    <button onclick="window.showTeacherDetails('${t.id}')" class="text-gray-400 hover:text-[#E31837] p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors mx-0.5" title="Attendance & Details"><i data-lucide="eye" class="h-4 w-4"></i></button>
+                                    <button onclick="window.editTeacher('${t.id}')" class="text-gray-400 hover:text-blue-600 p-2 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors mx-0.5"><i data-lucide="edit" class="h-4 w-4"></i></button>
+                                    <button onclick="window.deleteTeacher('${t.id}')" class="text-gray-400 hover:text-red-600 p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors mx-0.5"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
+                                </td>
+                            </tr>`;
+                    }
+                });
+            }
 
             document.getElementById('dash-revenue').textContent = totalRev.toFixed(2);
             document.getElementById('dash-salaries').textContent = totalSalaries.toFixed(2);
@@ -1121,11 +1447,39 @@
             document.getElementById('stat-total-students').textContent = students.length;
             document.getElementById('stat-founding').textContent = foundingCount;
             document.getElementById('stat-free').textContent = freeCount;
-            
-            const statKitsEl = document.getElementById('stat-kits');
-            if (statKitsEl) statKitsEl.textContent = kitCount;
+            const statKitsEl = document.getElementById('stat-kits'); if (statKitsEl) statKitsEl.textContent = kitCount;
 
-            // Students Directory
+            // RENDER CLASSES
+            const tbodyC = document.getElementById('class-table-body');
+            tbodyC.innerHTML = '';
+            if(filteredClasses.length === 0) {
+                tbodyC.innerHTML = `<tr><td colspan="4" class="px-5 py-8 text-center text-gray-400 font-bold text-sm">No groups/classes found.</td></tr>`;
+            } else {
+                filteredClasses.forEach(c => {
+                    const assignedTNames = (c.teacherIds || []).map(tid => {
+                        const tr = teachers.find(x => x.id === tid);
+                        return tr ? tr.name : 'Unknown';
+                    }).join(', ') || '<span class="text-gray-400 italic text-xs">None</span>';
+                    
+                    const totalClassPax = students.filter(s => s.classId === c.id).length;
+
+                    tbodyC.innerHTML += `
+                        <tr class="hover:bg-[#fff9e6] border-b border-gray-100 transition-colors">
+                            <td class="px-5 py-4">
+                                <p class="font-black text-[#292929] text-base">${c.name}</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mt-0.5">${c.schedule}</p>
+                            </td>
+                            <td class="px-5 py-4 font-bold text-gray-700 text-xs">${assignedTNames}</td>
+                            <td class="px-5 py-4 text-center font-black text-[#E31837] text-lg">${totalClassPax}</td>
+                            <td class="px-5 py-4 text-right whitespace-nowrap">
+                                <button onclick="window.editClass('${c.id}')" class="text-gray-400 hover:text-blue-600 p-2 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors mx-0.5"><i data-lucide="edit" class="h-4 w-4"></i></button>
+                                <button onclick="window.deleteClass('${c.id}')" class="text-gray-400 hover:text-red-600 p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors mx-0.5"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            // RENDER STUDENTS
             const tbodyS = document.getElementById('student-table-body');
             tbodyS.innerHTML = '';
             if(filteredStudents.length === 0) {
@@ -1133,10 +1487,13 @@
             } else {
                 [...filteredStudents].sort((a, b) => new Date(b.enrollDate) - new Date(a.enrollDate)).forEach(s => {
                     const c = s.status === 'Paid' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200';
+                    const assignedClass = classesData.find(cl => cl.id === s.classId);
+                    const classNameHtml = assignedClass ? `<span class="ml-2 px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded text-[9px] uppercase tracking-wider">${assignedClass.name}</span>` : '';
+                    
                     tbodyS.innerHTML += `
                         <tr class="hover:bg-[#fff9e6] border-b border-gray-100 transition-colors">
                             <td class="px-5 py-4 cursor-pointer" onclick="window.showStudentDetails('${s.id}')">
-                                <p class="font-black text-[#292929] hover:text-[#E31837] transition-colors">${s.name}</p>
+                                <div class="flex items-center"><p class="font-black text-[#292929] hover:text-[#E31837] transition-colors inline">${s.name}</p>${classNameHtml}</div>
                                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mt-0.5">${s.termStart}-${s.termEnd}</p>
                             </td>
                             <td class="px-5 py-4"><span class="px-2.5 py-1 rounded-md border text-[10px] font-black uppercase ${c}">${s.status}</span></td>
@@ -1150,38 +1507,7 @@
                 });
             }
 
-            // Teachers Directory
-            const tbodyT = document.getElementById('teacher-table-body');
-            tbodyT.innerHTML = '';
-            if(filteredTeachers.length === 0) {
-                tbodyT.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-gray-400 font-bold text-sm">No instructors found.</td></tr>`;
-            } else {
-                filteredTeachers.forEach(t => {
-                    let classes = 0;
-                    if (t.studentsHandling > 0 && t.studentsHandling <= 15) {
-                        classes = 1;
-                    } else if (t.studentsHandling > 15) {
-                        classes = Math.ceil(t.studentsHandling / 10);
-                    }
-                    const pay = ((classes * 10) + (t.studentsHandling * 1)) * t.sessions;
-                    tbodyT.innerHTML += `
-                        <tr class="hover:bg-[#fff9e6] border-b border-gray-100 transition-colors">
-                            <td class="px-5 py-4">
-                                <p class="font-black text-[#292929]">${t.name}</p>
-                                <p class="text-[10px] text-gray-500 font-bold tracking-wide flex items-center gap-1 mt-0.5 uppercase"><i data-lucide="clock" class="h-3 w-3 text-[#FFC72C]"></i> ${t.schedule}</p>
-                            </td>
-                            <td class="px-5 py-4 text-center font-black text-gray-700">${t.studentsHandling}</td>
-                            <td class="px-5 py-4 text-center font-black text-gray-700">${t.sessions}</td>
-                            <td class="px-5 py-4 font-black text-[#E31837] text-sm">$${pay.toFixed(2)}</td>
-                            <td class="px-5 py-4 text-right whitespace-nowrap">
-                                <button onclick="window.editTeacher('${t.id}')" class="text-gray-400 hover:text-blue-600 p-2 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors mx-0.5"><i data-lucide="edit" class="h-4 w-4"></i></button>
-                                <button onclick="window.deleteTeacher('${t.id}')" class="text-gray-400 hover:text-red-600 p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors mx-0.5"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
-                            </td>
-                        </tr>`;
-                });
-            }
-
-            // History Filter
+            // RENDER HISTORY
             const histFilter = document.getElementById('history-filter-month').value;
             let histStudents = [...students].sort((a, b) => new Date(b.enrollDate) - new Date(a.enrollDate));
             if (histFilter) histStudents = histStudents.filter(s => s.enrollDate.startsWith(histFilter));
@@ -1221,10 +1547,11 @@
         document.getElementById('s-date').valueAsDate = new Date();
         window.updateLiveFee();
 
-        // Close modal on escape key
+        // Close modals on escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !document.getElementById('student-modal').classList.contains('hidden')) {
-                window.closeModal();
+            if (e.key === 'Escape') {
+                if (!document.getElementById('student-modal').classList.contains('hidden')) window.closeModal();
+                if (!document.getElementById('teacher-modal').classList.contains('hidden')) window.closeTeacherModal();
             }
         });
 
