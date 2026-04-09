@@ -63,6 +63,13 @@
             border-color: var(--mcdo-yellow);
         }
 
+        /* Mobile Nav active state */
+        .mobile-nav-btn.active {
+            background-color: #fff9e6;
+            color: var(--mcdo-red);
+            border-left: 4px solid var(--mcdo-red);
+        }
+
         /* Overlays */
         #loading-overlay { transition: opacity 0.3s ease; }
         #lock-overlay { transition: opacity 0.3s ease; backdrop-filter: blur(8px); }
@@ -95,14 +102,19 @@
     </div>
 
     <!-- McDo Style Header / Hero -->
-    <header class="bg-[#E31837] text-white shadow-md z-10 relative">
+    <header class="bg-[#E31837] text-white shadow-md z-30 relative">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 relative">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
                 
-                <!-- Logo & Title -->
-                <div class="flex items-center gap-4">
+                <!-- Logo, Hamburger & Title -->
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <!-- Hamburger Menu Button (Mobile Only) -->
+                    <button onclick="window.toggleMobileMenu()" class="md:hidden p-2 -ml-2 text-white hover:text-[#FFC72C] transition-colors focus:outline-none">
+                        <i data-lucide="menu" class="h-7 w-7"></i>
+                    </button>
+
                     <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logo-upload').click()">
-                        <div class="h-12 w-12 sm:h-16 sm:w-16 bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden transition-transform transform group-hover:scale-105">
+                        <div class="h-12 w-12 sm:h-16 sm:w-16 bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden transition-transform transform group-hover:scale-105 border-2 border-transparent group-hover:border-[#FFC72C]">
                             <img id="club-logo" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E31837' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 8V4H8'/><rect width='16' height='12' x='4' y='8' rx='2'/><path d='M2 14h2'/><path d='M20 14h2'/><path d='M15 13v2'/><path d='M9 13v2'/></svg>" alt="Logo" class="w-full h-full object-cover">
                         </div>
                         <input type="file" id="logo-upload" class="hidden" accept="image/*">
@@ -128,32 +140,46 @@
                 </button>
             </div>
         </div>
+
+        <!-- Mobile Dropdown Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-200 flex flex-col z-20">
+            <button onclick="switchTab('dashboard'); toggleMobileMenu();" id="mob-tab-dashboard" class="mobile-nav-btn active p-4 text-left font-bold text-gray-700 border-b border-gray-100 flex items-center gap-3 border-l-4 border-transparent transition-all">
+                <i data-lucide="layout-dashboard" class="h-5 w-5"></i> Overview
+            </button>
+            <button onclick="switchTab('students'); toggleMobileMenu();" id="mob-tab-students" class="mobile-nav-btn p-4 text-left font-bold text-gray-700 border-b border-gray-100 flex items-center gap-3 border-l-4 border-transparent transition-all">
+                <i data-lucide="users" class="h-5 w-5"></i> Students Directory
+            </button>
+            <button onclick="switchTab('teachers'); toggleMobileMenu();" id="mob-tab-teachers" class="mobile-nav-btn p-4 text-left font-bold text-gray-700 border-b border-gray-100 flex items-center gap-3 border-l-4 border-transparent transition-all">
+                <i data-lucide="cpu" class="h-5 w-5"></i> Instructors List
+            </button>
+            <button onclick="switchTab('history'); toggleMobileMenu();" id="mob-tab-history" class="mobile-nav-btn p-4 text-left font-bold text-gray-700 flex items-center gap-3 border-l-4 border-transparent transition-all">
+                <i data-lucide="history" class="h-5 w-5"></i> Enrollment History
+            </button>
+        </div>
     </header>
 
-    <!-- Navigation Pills (Category Style) -->
-    <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
+    <!-- Desktop Navigation Pills (Hidden on Mobile) -->
+    <div class="hidden md:block bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
-            <div class="overflow-x-auto no-scrollbar py-3">
-                <div class="flex gap-2 min-w-max">
-                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
-                        <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Overview
-                    </button>
-                    <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
-                        <i data-lucide="users" class="h-4 w-4"></i> Students
-                    </button>
-                    <button onclick="switchTab('teachers')" id="tab-teachers" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
-                        <i data-lucide="cpu" class="h-4 w-4"></i> Instructors
-                    </button>
-                    <button onclick="switchTab('history')" id="tab-history" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
-                        <i data-lucide="history" class="h-4 w-4"></i> History
-                    </button>
-                </div>
+            <div class="py-3 flex gap-2">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Overview
+                </button>
+                <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="users" class="h-4 w-4"></i> Students
+                </button>
+                <button onclick="switchTab('teachers')" id="tab-teachers" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="cpu" class="h-4 w-4"></i> Instructors
+                </button>
+                <button onclick="switchTab('history')" id="tab-history" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="history" class="h-4 w-4"></i> History
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Main Content Area -->
-    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8" onclick="window.closeMobileMenuOnClickOutside()">
         
         <!-- ================= VIEW: DASHBOARD ================= -->
         <div id="view-dashboard" class="space-y-6">
@@ -477,7 +503,7 @@
             &copy; <span id="current-year"></span> NVF Robotics System
         </p>
         <!-- Secret Lock Trigger -->
-        <button onclick="window.promptLock()" class="ml-2 opacity-10 hover:opacity-100 transition-opacity p-1 cursor-pointer">
+        <button onclick="window.promptLock()" class="ml-2 opacity-10 hover:opacity-100 transition-opacity p-1 cursor-pointer focus:outline-none">
             <i data-lucide="lock" class="h-3 w-3 text-gray-400 hover:text-[#E31837]"></i>
         </button>
     </footer>
@@ -577,7 +603,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'nvf-robotics';
-        let userId = null;
 
         // In-memory state
         let students = [];
@@ -596,7 +621,7 @@
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } catch (tokenError) {
-                        console.warn("Custom token failed (expected if using custom Firebase config). Falling back to anonymous auth.", tokenError);
+                        console.warn("Custom token failed. Falling back to anonymous auth.", tokenError);
                         await signInAnonymously(auth);
                     }
                 } else {
@@ -612,7 +637,6 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                userId = user.uid;
                 setupRealtimeListeners();
                 
                 const loader = document.getElementById('loading-overlay');
@@ -621,12 +645,12 @@
             }
         });
 
+        // Use public data paths so changes affect all devices globally
         function setupRealtimeListeners() {
-            if (!userId) return;
-
-            const studentsRef = collection(db, 'artifacts', appId, 'users', userId, 'students');
-            const teachersRef = collection(db, 'artifacts', appId, 'users', userId, 'teachers');
-            const settingsRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'general');
+            // Collection paths using shared/public space to enable global sync
+            const studentsRef = collection(db, 'artifacts', appId, 'public', 'data', 'students');
+            const teachersRef = collection(db, 'artifacts', appId, 'public', 'data', 'teachers');
+            const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general');
 
             // Listen to Students
             onSnapshot(studentsRef, (snapshot) => {
@@ -661,14 +685,13 @@
                         appleIcon.href = data.clubLogo;
                     }
 
-                    // Handle System Lock State Sync
+                    // Handle System Lock State Sync Globally
                     if (data.isLocked !== undefined) {
                         systemLocked = data.isLocked;
                         const lockScreen = document.getElementById('lock-overlay');
                         if (systemLocked) {
                             lockScreen.classList.remove('hidden');
                             window.closeModal(); // Close active modals if any
-                            // Allow slight delay to trigger opacity transition
                             setTimeout(() => lockScreen.classList.remove('opacity-0'), 10);
                         } else {
                             lockScreen.classList.add('opacity-0');
@@ -682,11 +705,10 @@
 
         // --- SYSTEM LOCK FEATURE ---
         window.promptLock = async function() {
-            const code = prompt("Enter security code to LOCK system:");
+            const code = prompt("Enter security code to LOCK system globally:");
             if (code === "0000") {
-                if(!userId) return;
                 try {
-                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'settings', 'general'), { isLocked: true }, { merge: true });
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general'), { isLocked: true }, { merge: true });
                 } catch(e) { console.error("Lock failed:", e); }
             } else if (code) {
                 alert("Authentication Failed. Incorrect Code.");
@@ -694,11 +716,10 @@
         };
 
         window.promptUnlock = async function() {
-            const code = prompt("Enter security code to UNLOCK system:");
+            const code = prompt("Enter security code to UNLOCK system globally:");
             if (code === "0000") {
-                if(!userId) return;
                 try {
-                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'settings', 'general'), { isLocked: false }, { merge: true });
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general'), { isLocked: false }, { merge: true });
                 } catch(e) { console.error("Unlock failed:", e); }
             } else if (code) {
                 alert("Authentication Failed. Incorrect Code.");
@@ -712,14 +733,11 @@
                 const reader = new FileReader();
                 reader.onload = async function(event) {
                     const dataUrl = event.target.result;
-                    // Immediately update UI for the local user
                     document.getElementById('club-logo').src = dataUrl;
                     document.getElementById('dynamic-favicon').href = dataUrl;
                     
-                    if(!userId) return;
-                    // Save the base64 image string to Firestore settings document
                     try {
-                        const settingsRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'general');
+                        const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general');
                         await setDoc(settingsRef, { clubLogo: dataUrl }, { merge: true });
                     } catch(err) {
                         console.error("Error saving logo to Firebase:", err);
@@ -731,11 +749,31 @@
         });
 
         // --- GLOBAL FUNCTIONS ---
+
+        // Mobile Menu Toggle
+        window.toggleMobileMenu = function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        };
+
+        // Close Mobile Menu on Outside Click
+        window.closeMobileMenuOnClickOutside = function() {
+            const menu = document.getElementById('mobile-menu');
+            if (!menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        };
         
         window.switchTab = function(tabId) {
+            // Desktop pills styling
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'bg-[#FFC72C]', 'text-[#292929]', 'border-[#FFC72C]'));
             const btn = document.getElementById(`tab-${tabId}`);
             if(btn) btn.classList.add('active');
+
+            // Mobile menu styling
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
+            const mobBtn = document.getElementById(`mob-tab-${tabId}`);
+            if(mobBtn) mobBtn.classList.add('active');
             
             ['dashboard', 'students', 'teachers', 'history'].forEach(id => {
                 document.getElementById(`view-${id}`).classList.add('hidden');
@@ -786,7 +824,6 @@
         
         window.saveStudent = async function(e) {
             e.preventDefault();
-            if(!userId) return;
 
             const isFounding = document.getElementById('s-founding').checked;
             const needsKit = document.getElementById('s-kit').checked;
@@ -813,22 +850,20 @@
             }
 
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', docId), studentObj);
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', docId), studentObj);
                 window.resetStudentForm();
             } catch (err) { console.error("Error saving student", err); }
         };
 
         window.deleteStudent = async function(id) {
-            if(!userId) return;
             if(confirm('Permanently delete this student record?')) {
-                try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', id.toString())); } 
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', id.toString())); } 
                 catch(err) { console.error(err); }
             }
         };
 
         window.saveTeacher = async function(e) {
             e.preventDefault();
-            if(!userId) return;
 
             const teacherObj = {
                 name: document.getElementById('t-name').value,
@@ -841,15 +876,14 @@
             const docId = idStr || Date.now().toString();
 
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'teachers', docId), teacherObj);
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', docId), teacherObj);
                 window.resetTeacherForm();
             } catch(err) { console.error(err); }
         };
 
         window.deleteTeacher = async function(id) {
-            if(!userId) return;
             if(confirm('Remove this instructor?')) {
-                try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'teachers', id.toString())); } 
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', id.toString())); } 
                 catch(err) { console.error(err); }
             }
         };
@@ -974,7 +1008,7 @@
         };
 
         window.addMonthlyRecord = async function() {
-            if (!userId || !currentModalStudentId) return;
+            if (!currentModalStudentId) return;
             const month = document.getElementById('mh-month').value;
             const status = document.getElementById('mh-status').value;
             if (!month) return alert('Please select a month');
@@ -983,7 +1017,7 @@
             const newHistory = [...(student.history || []), { month, status }];
 
             try {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', currentModalStudentId), {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', currentModalStudentId), {
                     history: newHistory
                 });
                 document.getElementById('mh-month').value = '';
@@ -991,7 +1025,7 @@
         };
 
         window.removeMonthlyRecord = async function(index) {
-            if (!userId || !currentModalStudentId) return;
+            if (!currentModalStudentId) return;
             const student = students.find(s => s.id === currentModalStudentId);
             const history = student.history || [];
             const sorted = [...history].sort((a,b) => b.month.localeCompare(a.month));
@@ -1000,7 +1034,7 @@
             const newHistory = history.filter(h => h !== itemToRemove);
 
             try {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', currentModalStudentId), {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', currentModalStudentId), {
                     history: newHistory
                 });
             } catch(e) { console.error(e); }
