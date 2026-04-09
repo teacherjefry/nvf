@@ -77,12 +77,12 @@
     </div>
 
     <!-- System Locked Overlay -->
-    <div id="lock-overlay" class="fixed inset-0 bg-[#E31837]/95 z-[250] hidden flex-col items-center justify-center text-white">
-        <i data-lucide="shield-alert" class="h-24 w-24 mb-6 text-[#FFC72C] drop-shadow-lg"></i>
-        <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight text-center drop-shadow-md">SYSTEM LOCKED</h1>
-        <div class="bg-black/20 p-6 sm:p-8 rounded-2xl max-w-lg text-center border border-white/10 shadow-2xl">
-            <p class="text-lg sm:text-xl font-bold mb-3 text-[#FFC72C]">Security Protocol Activated</p>
-            <p class="text-sm sm:text-base font-medium opacity-90 leading-relaxed">
+    <div id="lock-overlay" class="fixed inset-0 bg-[#E31837]/95 z-[250] hidden flex-col items-center justify-center text-white text-center">
+        <i data-lucide="shield-alert" class="h-24 w-24 mb-6 text-[#FFC72C] drop-shadow-lg mx-auto"></i>
+        <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight text-center drop-shadow-md w-full">SYSTEM LOCKED</h1>
+        <div class="bg-black/20 p-6 sm:p-8 rounded-2xl max-w-lg text-center border border-white/10 shadow-2xl mx-auto flex flex-col items-center">
+            <p class="text-lg sm:text-xl font-bold mb-3 text-[#FFC72C] text-center w-full">Security Protocol Activated</p>
+            <p class="text-sm sm:text-base font-medium opacity-90 leading-relaxed text-center w-full">
                 Access to the NVF Robotics Club Management System has been temporarily suspended for security purposes.
                 <br><br>
                 Please contact the Chief Administrator to authenticate and restore your access privileges.
@@ -102,8 +102,8 @@
                 <!-- Logo & Title -->
                 <div class="flex items-center gap-4">
                     <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logo-upload').click()">
-                        <div class="h-12 w-12 sm:h-16 sm:w-16 bg-white rounded-2xl shadow-lg flex items-center justify-center p-1.5 overflow-hidden transition-transform transform group-hover:scale-105 border-2 border-transparent group-hover:border-[#FFC72C]">
-                            <img id="club-logo" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E31837' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 8V4H8'/><rect width='16' height='12' x='4' y='8' rx='2'/><path d='M2 14h2'/><path d='M20 14h2'/><path d='M15 13v2'/><path d='M9 13v2'/></svg>" alt="Logo" class="w-full h-full object-contain">
+                        <div class="h-12 w-12 sm:h-16 sm:w-16 bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden transition-transform transform group-hover:scale-105">
+                            <img id="club-logo" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E31837' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 8V4H8'/><rect width='16' height='12' x='4' y='8' rx='2'/><path d='M2 14h2'/><path d='M20 14h2'/><path d='M15 13v2'/><path d='M9 13v2'/></svg>" alt="Logo" class="w-full h-full object-cover">
                         </div>
                         <input type="file" id="logo-upload" class="hidden" accept="image/*">
                     </div>
