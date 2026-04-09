@@ -479,16 +479,17 @@
                             <input type="text" id="t-name" placeholder="Enter name" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
                         </div>
 
-                        <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl">
-                            <p class="text-xs text-gray-500 italic mb-2 leading-tight">If assigned to Groups in the Classes tab, pax is auto-calculated. You can override below.</p>
+                        <!-- Computed Stats Only (Locked) -->
+                        <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4">
+                            <p class="text-xs text-gray-500 italic mb-3 leading-tight">Total Students and Total Sessions are auto-computed from Assigned Groups and Attendance Tracker.</p>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Manual Pax</label>
-                                    <input type="number" id="t-students" min="0" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFC72C] outline-none text-sm font-medium transition-all">
+                                    <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Total Students</label>
+                                    <input type="number" id="t-students" value="0" readonly class="w-full px-3 py-2 bg-gray-200 border border-gray-300 rounded-lg text-gray-500 outline-none text-sm font-bold cursor-not-allowed">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Total Sessions</label>
-                                    <input type="number" id="t-sessions" min="1" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFC72C] outline-none text-sm font-medium transition-all">
+                                    <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Total Sessions</label>
+                                    <input type="number" id="t-sessions" value="0" readonly class="w-full px-3 py-2 bg-gray-200 border border-gray-300 rounded-lg text-gray-500 outline-none text-sm font-bold cursor-not-allowed">
                                 </div>
                             </div>
                         </div>
@@ -513,8 +514,8 @@
                             <thead class="text-[11px] text-gray-500 uppercase bg-gray-50 font-bold tracking-wider">
                                 <tr>
                                     <th class="px-5 py-4 border-b border-gray-200">Instructor & Time</th>
-                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Pax (Auto/Man)</th>
-                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Sessions</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Total Students</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Sessions Taught</th>
                                     <th class="px-5 py-4 border-b border-gray-200 font-bold text-[#E31837]">Est. Pay</th>
                                     <th class="px-5 py-4 border-b border-gray-200 text-right">Actions</th>
                                 </tr>
@@ -656,14 +657,14 @@
         </div>
     </div>
 
-    <!-- ================= TEACHER ATTENDANCE MODAL ================= -->
-    <div id="teacher-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity opacity-0">
-        <div id="teacher-modal-content" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col border border-gray-100">
+    <!-- ================= TEACHER ATTENDANCE MODAL (FULL SCREEN SPLIT) ================= -->
+    <div id="teacher-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm transition-opacity opacity-0">
+        <div id="teacher-modal-content" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl overflow-hidden transform scale-95 transition-transform duration-300 h-[90vh] max-h-[900px] flex flex-col border border-gray-100">
             
             <!-- Modal Header -->
             <div class="bg-[#292929] relative p-6 pb-5 text-center shrink-0">
                 <button onclick="window.closeTeacherModal()" class="absolute top-4 right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
-                    <i data-lucide="x" class="h-4 w-4"></i>
+                    <i data-lucide="x" class="h-5 w-5"></i>
                 </button>
                 <div class="relative mx-auto w-16 h-16 bg-[#FFC72C] rounded-2xl flex items-center justify-center mb-3 shadow-lg transform rotate-3">
                     <i data-lucide="user-check" class="h-8 w-8 text-[#292929]"></i>
@@ -672,56 +673,59 @@
                 <p id="t-modal-schedule" class="text-xs text-gray-400 font-bold mt-1 uppercase tracking-widest">Schedule Info</p>
             </div>
             
-            <!-- Modal Scrollable Body -->
-            <div class="p-6 overflow-y-auto flex-grow custom-scrollbar space-y-5 bg-[#fcfcfc]">
+            <!-- Modal Body Split -->
+            <div class="flex-grow flex flex-col md:flex-row overflow-hidden bg-[#fcfcfc]">
                 
-                <!-- Assigned Classes Info -->
-                <div class="bg-[#fff9e6] p-4 rounded-xl border border-[#FFC72C]/40 shadow-sm">
-                    <p class="text-xs font-black text-[#292929] uppercase tracking-wider mb-2 flex items-center gap-2"><i data-lucide="layers" class="h-4 w-4 text-[#E31837]"></i> Assigned Groups</p>
-                    <ul id="t-modal-classes" class="text-sm font-medium text-gray-700 space-y-1 list-disc list-inside pl-1">
-                        <!-- Injected -->
-                    </ul>
-                    <div class="mt-3 pt-3 border-t border-yellow-200 flex justify-between items-center">
-                        <span class="text-xs font-bold text-gray-500 uppercase">Auto-Computed Pax</span>
-                        <span id="t-modal-auto-pax" class="text-lg font-black text-[#E31837]">0</span>
+                <!-- Left Side: Stats & Classes -->
+                <div class="w-full md:w-[40%] p-6 md:p-8 overflow-y-auto custom-scrollbar border-b md:border-b-0 md:border-r border-gray-200 flex flex-col gap-6">
+                    <!-- Attendance Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-green-50 border border-green-100 p-4 rounded-2xl text-center shadow-sm">
+                            <p class="text-[10px] font-bold text-green-600 uppercase tracking-wider mb-1">Present Days</p>
+                            <p id="t-stat-present" class="text-3xl font-black text-green-700">0</p>
+                        </div>
+                        <div class="bg-red-50 border border-red-100 p-4 rounded-2xl text-center shadow-sm">
+                            <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1">Absent Days</p>
+                            <p id="t-stat-absent" class="text-3xl font-black text-red-700">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Assigned Classes Info -->
+                    <div class="bg-[#fff9e6] p-5 rounded-2xl border border-[#FFC72C]/40 shadow-sm flex-grow">
+                        <p class="text-xs font-black text-[#292929] uppercase tracking-wider mb-3 flex items-center gap-2"><i data-lucide="layers" class="h-4 w-4 text-[#E31837]"></i> Assigned Groups</p>
+                        <ul id="t-modal-classes" class="text-sm font-medium text-gray-700 space-y-2 list-none pl-0">
+                            <!-- Injected -->
+                        </ul>
+                        <div class="mt-5 pt-4 border-t border-yellow-200 flex justify-between items-center">
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Active Pax</span>
+                            <span id="t-modal-auto-pax" class="text-2xl font-black text-[#E31837]">0</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Attendance Stats -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-green-50 border border-green-100 p-3 rounded-xl text-center">
-                        <p class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Present Days</p>
-                        <p id="t-stat-present" class="text-2xl font-black text-green-700">0</p>
-                    </div>
-                    <div class="bg-red-50 border border-red-100 p-3 rounded-xl text-center">
-                        <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider">Absent Days</p>
-                        <p id="t-stat-absent" class="text-2xl font-black text-red-700">0</p>
-                    </div>
-                </div>
-
-                <!-- Attendance Tracker Section -->
-                <div class="pt-2">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-sm font-black text-[#292929] flex items-center gap-2 uppercase tracking-wide"><i data-lucide="calendar-check" class="h-4 w-4 text-[#FFC72C]"></i> Attendance Tracker</h4>
+                <!-- Right Side: Attendance Tracker -->
+                <div class="w-full md:w-[60%] p-6 md:p-8 flex flex-col h-full overflow-hidden">
+                    <div class="flex justify-between items-center mb-5 shrink-0">
+                        <h4 class="text-lg font-black text-[#292929] flex items-center gap-2 uppercase tracking-wide"><i data-lucide="calendar-check" class="h-6 w-6 text-[#FFC72C]"></i> Attendance Tracker</h4>
                     </div>
 
                     <!-- Add Attendance Form -->
-                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm space-y-2 mb-4">
-                        <div class="flex gap-2">
-                            <input type="date" id="t-att-date" class="w-1/2 px-2 py-1.5 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C]">
-                            <select id="t-att-status" class="w-1/2 px-2 py-1.5 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C]">
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 mb-6 shrink-0 focus-within:border-[#FFC72C] transition-colors">
+                        <div class="flex gap-3">
+                            <input type="date" id="t-att-date" class="w-1/2 px-3 py-2 text-sm font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C] transition-all">
+                            <select id="t-att-status" class="w-1/2 px-3 py-2 text-sm font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C] transition-all">
                                 <option value="Present">Present</option>
                                 <option value="Absent">Absent</option>
                             </select>
                         </div>
-                        <div class="flex gap-2">
-                            <input type="text" id="t-att-remarks" placeholder="Remarks (optional)..." class="w-full px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C]">
-                            <button onclick="window.addTeacherAttendance()" class="shrink-0 bg-[#292929] hover:bg-black text-white px-3 py-1.5 rounded-lg transition-colors font-bold text-xs shadow-sm">Mark</button>
+                        <div class="flex gap-3">
+                            <input type="text" id="t-att-remarks" placeholder="Add remarks (optional)..." class="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#FFC72C] transition-all">
+                            <button onclick="window.addTeacherAttendance()" class="shrink-0 bg-[#292929] hover:bg-black text-white px-6 py-2 rounded-lg transition-all font-bold text-sm shadow-md active:scale-95">Mark</button>
                         </div>
                     </div>
                     
                     <!-- Attendance List -->
-                    <div id="t-attendance-list" class="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                    <div id="t-attendance-list" class="flex-grow overflow-y-auto pr-3 custom-scrollbar space-y-3">
                         <!-- Items injected here -->
                     </div>
                 </div>
@@ -755,15 +759,15 @@
         // In-memory state
         let students = [];
         let teachers = [];
-        let classesData = []; // NEW: Group/Classes state
+        let classesData = []; 
         let searchTerm = "";
         let currentModalStudentId = null;
-        let currentModalTeacherId = null; // NEW: Teacher Modal tracking
+        let currentModalTeacherId = null; 
         let systemLocked = false;
 
         const refreshIcons = () => setTimeout(() => lucide.createIcons(), 10);
         document.getElementById('current-year').textContent = new Date().getFullYear();
-        document.getElementById('t-att-date').valueAsDate = new Date(); // Default today for attendance
+        document.getElementById('t-att-date').valueAsDate = new Date(); 
 
         // --- FIREBASE INITIALIZATION ---
         const initAuth = async () => {
@@ -789,41 +793,35 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 setupRealtimeListeners();
-                
                 const loader = document.getElementById('loading-overlay');
                 loader.style.opacity = '0';
                 setTimeout(() => loader.classList.add('hidden'), 300);
             }
         });
 
-        // Use public data paths so changes affect all devices globally
         function setupRealtimeListeners() {
             const studentsRef = collection(db, 'artifacts', appId, 'public', 'data', 'students');
             const teachersRef = collection(db, 'artifacts', appId, 'public', 'data', 'teachers');
-            const classesRef = collection(db, 'artifacts', appId, 'public', 'data', 'classes'); // NEW
+            const classesRef = collection(db, 'artifacts', appId, 'public', 'data', 'classes'); 
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general');
 
-            // Listen to Students
             onSnapshot(studentsRef, (snapshot) => {
                 students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if(!systemLocked) window.renderAll();
                 if(currentModalStudentId && !systemLocked) window.showStudentDetails(currentModalStudentId);
             }, (error) => console.error("Error fetching students:", error));
 
-            // Listen to Teachers
             onSnapshot(teachersRef, (snapshot) => {
                 teachers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if(!systemLocked) window.renderAll();
                 if(currentModalTeacherId && !systemLocked) window.showTeacherDetails(currentModalTeacherId);
             }, (error) => console.error("Error fetching teachers:", error));
 
-            // Listen to Classes/Groups
             onSnapshot(classesRef, (snapshot) => {
                 classesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if(!systemLocked) window.renderAll();
             }, (error) => console.error("Error fetching classes:", error));
 
-            // Listen to General Settings (Logo, Favicon, Lock State)
             onSnapshot(settingsRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -942,7 +940,7 @@
             if(view) view.classList.remove('hidden');
 
             window.location.hash = tabId;
-            if(tabId === 'history' || tabId === 'classes') window.renderAll();
+            if(tabId === 'history' || tabId === 'classes' || tabId === 'teachers') window.renderAll();
         };
 
         const initialTab = window.location.hash.replace('#', '') || 'dashboard';
@@ -979,7 +977,7 @@
             
             const studentObj = {
                 name: document.getElementById('s-name').value,
-                classId: document.getElementById('s-classId').value, // NEW: Assign to Class
+                classId: document.getElementById('s-classId').value, 
                 enrollDate: document.getElementById('s-date').value,
                 termStart: document.getElementById('s-term-start').value,
                 termEnd: document.getElementById('s-term-end').value,
@@ -1024,7 +1022,7 @@
             document.getElementById('student-form-title').innerHTML = '<i data-lucide="edit-3" class="h-6 w-6 text-[#E31837]"></i> Update Cadet Record';
             document.getElementById('student-id').value = s.id;
             document.getElementById('s-name').value = s.name;
-            document.getElementById('s-classId').value = s.classId || ''; // Assign class
+            document.getElementById('s-classId').value = s.classId || ''; 
             document.getElementById('s-date').value = s.enrollDate;
             document.getElementById('s-term-start').value = s.termStart;
             document.getElementById('s-term-end').value = s.termEnd;
@@ -1040,8 +1038,6 @@
         // --- CLASSES/GROUPS CRUD ---
         window.saveClass = async function(e) {
             e.preventDefault();
-            
-            // Gather selected teachers from checkboxes
             const selectedTeachers = [];
             document.querySelectorAll('.class-teacher-cb:checked').forEach(cb => selectedTeachers.push(cb.value));
 
@@ -1062,10 +1058,7 @@
 
         window.deleteClass = async function(id) {
             if(confirm('Delete this group? Students will become unassigned.')) {
-                try { 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'classes', id.toString())); 
-                    // Optional: loop students and remove this classId
-                } 
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'classes', id.toString())); } 
                 catch(err) { console.error(err); }
             }
         };
@@ -1087,7 +1080,6 @@
             document.getElementById('c-name').value = c.name;
             document.getElementById('c-schedule').value = c.schedule;
             
-            // Check assigned teachers
             document.querySelectorAll('.class-teacher-cb').forEach(cb => {
                 cb.checked = (c.teacherIds || []).includes(cb.value);
             });
@@ -1099,10 +1091,8 @@
             e.preventDefault();
             const teacherObj = {
                 name: document.getElementById('t-name').value,
-                studentsHandling: parseInt(document.getElementById('t-students').value) || 0,
-                sessions: parseInt(document.getElementById('t-sessions').value) || 1,
                 schedule: document.getElementById('t-schedule').value,
-                attendance: [] // NEW: init attendance array
+                attendance: [] // array created empty if new
             };
             const idStr = document.getElementById('teacher-id').value;
             const docId = idStr || Date.now().toString();
@@ -1128,6 +1118,8 @@
         window.resetTeacherForm = function() {
             document.getElementById('teacher-form').reset();
             document.getElementById('teacher-id').value = '';
+            document.getElementById('t-students').value = 0;
+            document.getElementById('t-sessions').value = 0;
             document.getElementById('teacher-form-title').innerHTML = '<i data-lucide="circuit-board" class="h-6 w-6 text-[#FFC72C]"></i> Setup Instructor';
             refreshIcons();
         };
@@ -1139,9 +1131,17 @@
             document.getElementById('teacher-form-title').innerHTML = '<i data-lucide="edit-3" class="h-6 w-6 text-[#FFC72C]"></i> Edit Instructor';
             document.getElementById('teacher-id').value = t.id;
             document.getElementById('t-name').value = t.name;
-            document.getElementById('t-students').value = t.studentsHandling;
-            document.getElementById('t-sessions').value = t.sessions;
             document.getElementById('t-schedule').value = t.schedule;
+            
+            // Auto Calculate stats for display in the form
+            let autoPax = 0;
+            const assignedClasses = classesData.filter(c => (c.teacherIds || []).includes(t.id));
+            assignedClasses.forEach(c => { autoPax += students.filter(s => s.classId === c.id).length; });
+            const finalSessions = (t.attendance || []).filter(a => a.status === 'Present').length;
+            
+            document.getElementById('t-students').value = autoPax;
+            document.getElementById('t-sessions').value = finalSessions;
+            
             refreshIcons();
         };
 
@@ -1161,12 +1161,16 @@
             cListEl.innerHTML = '';
             
             if(assignedClasses.length === 0) {
-                cListEl.innerHTML = `<li class="text-xs text-gray-400 italic py-1">No groups assigned yet.</li>`;
+                cListEl.innerHTML = `<li class="text-sm font-medium text-gray-400 italic bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center">No groups currently assigned</li>`;
             } else {
                 assignedClasses.forEach(c => {
                     const classPax = students.filter(s => s.classId === c.id).length;
                     totalAutoPax += classPax;
-                    cListEl.innerHTML += `<li class="py-0.5"><strong>${c.name}</strong> <span class="text-xs text-gray-500 ml-1">(${classPax} pax)</span></li>`;
+                    cListEl.innerHTML += `
+                        <li class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center mb-2">
+                            <strong class="text-sm text-[#292929]">${c.name}</strong> 
+                            <span class="text-xs font-black bg-gray-100 px-2.5 py-1 rounded-md text-gray-700">${classPax} pax</span>
+                        </li>`;
                 });
             }
             document.getElementById('t-modal-auto-pax').textContent = totalAutoPax;
@@ -1178,21 +1182,25 @@
             attListEl.innerHTML = '';
             
             if(att.length === 0) {
-                attListEl.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-2">No attendance records.</p>`;
+                attListEl.innerHTML = `
+                    <div class="h-32 flex flex-col items-center justify-center text-gray-400 opacity-70">
+                        <i data-lucide="calendar-off" class="h-8 w-8 mb-2"></i>
+                        <p class="text-xs font-bold uppercase tracking-widest">No attendance records</p>
+                    </div>`;
             } else {
                 [...att].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach((r, idx) => {
                     if(r.status === 'Present') pres++; else abs++;
-                    const c = r.status === 'Present' ? 'text-green-600' : 'text-red-500';
-                    const rem = r.remarks ? `<p class="text-[10px] text-gray-500 italic mt-0.5">${r.remarks}</p>` : '';
+                    const c = r.status === 'Present' ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200';
+                    const rem = r.remarks ? `<p class="text-[11px] text-gray-500 font-medium italic mt-1 leading-tight w-full truncate" title="${r.remarks}">"${r.remarks}"</p>` : '';
                     attListEl.innerHTML += `
-                        <div class="flex justify-between items-center text-xs p-2.5 bg-white border border-gray-100 shadow-sm rounded-lg">
-                            <div>
-                                <span class="font-black text-gray-700">${r.date}</span>
+                        <div class="flex items-center justify-between text-xs p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:border-gray-300 transition-colors">
+                            <div class="overflow-hidden mr-3">
+                                <span class="font-black text-[#292929] text-sm">${r.date}</span>
                                 ${rem}
                             </div>
-                            <div class="flex items-center gap-3">
-                                <span class="font-black uppercase tracking-wide ${c}">${r.status}</span>
-                                <button onclick="window.removeTeacherAttendance(${idx})" class="text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="trash" class="h-4 w-4"></i></button>
+                            <div class="flex items-center gap-3 shrink-0">
+                                <span class="font-bold px-3 py-1.5 rounded-lg border uppercase tracking-wider text-[10px] ${c}">${r.status}</span>
+                                <button onclick="window.removeTeacherAttendance(${idx})" class="text-gray-300 hover:text-[#E31837] transition-colors p-1"><i data-lucide="trash-2" class="h-5 w-5"></i></button>
                             </div>
                         </div>`;
                 });
@@ -1352,7 +1360,6 @@
             sClassSelect.value = currentSelectedClass;
 
             const cTeachersContainer = document.getElementById('c-teachers-container');
-            // Keep track of what was checked
             const currentlyCheckedTeachers = Array.from(document.querySelectorAll('.class-teacher-cb:checked')).map(cb => cb.value);
             if(teachers.length === 0) {
                 cTeachersContainer.innerHTML = `<p class="text-xs text-gray-400 italic">No instructors available yet.</p>`;
@@ -1390,45 +1397,42 @@
                 tbodyT.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-gray-400 font-bold text-sm">No instructors found.</td></tr>`;
             } else {
                 teachers.forEach(t => {
-                    // Compute Auto Pax from assigned classes
+                    // Compute Pax based on assigned classes
                     const assignedClasses = classesData.filter(c => (c.teacherIds || []).includes(t.id));
                     let autoPax = 0;
                     assignedClasses.forEach(c => {
                         autoPax += students.filter(s => s.classId === c.id).length;
                     });
+                    const finalPax = autoPax; // Totally Auto now
                     
-                    // Final pax used for calculation (Auto overrides Manual if Auto > 0, otherwise use manual)
-                    // Wait, instruction: "it will auto compute or show to it total pax"
-                    // Let's use AutoPax if assigned to any class, else fallback to manual. Or let's sum them? 
-                    // Best: If they have autoPax, use it. If not, use manual.
-                    const finalPax = autoPax > 0 ? autoPax : t.studentsHandling;
+                    // Compute Sessions based on Attendance Records (Present)
+                    const finalSessions = (t.attendance || []).filter(a => a.status === 'Present').length;
 
                     let classes = 0;
                     if (finalPax > 0 && finalPax <= 15) classes = 1;
                     else if (finalPax > 15) classes = Math.ceil(finalPax / 10);
                     
-                    const pay = ((classes * 10) + (finalPax * 1)) * t.sessions;
+                    const pay = ((classes * 10) + (finalPax * 1)) * finalSessions;
                     totalSalaries += pay;
 
                     // Dash List
                     dashTeacherListEl.innerHTML += `
                         <tr class="border-b border-gray-50 hover:bg-[#fff9e6] transition-colors">
                             <td class="px-4 py-3 font-bold text-gray-700">${t.name}</td>
-                            <td class="px-4 py-3 text-gray-500 font-medium text-[11px] text-center">${finalPax} pax / ${t.sessions} sess.</td>
+                            <td class="px-4 py-3 text-gray-500 font-medium text-[11px] text-center">${finalPax} pax / ${finalSessions} sess.</td>
                             <td class="px-4 py-3 text-right font-black text-[#E31837]">$${pay.toFixed(2)}</td>
                         </tr>`;
 
                     // Full Teachers List (Filtered)
                     if (t.name.toLowerCase().includes(searchTerm)) {
-                        const paxLabel = autoPax > 0 ? `<span class="text-[#E31837]">${finalPax} (Auto)</span>` : `${finalPax} (Man)`;
                         tbodyT.innerHTML += `
                             <tr class="hover:bg-[#fff9e6] border-b border-gray-100 transition-colors">
                                 <td class="px-5 py-4">
                                     <p class="font-black text-[#292929]">${t.name}</p>
                                     <p class="text-[10px] text-gray-500 font-bold tracking-wide flex items-center gap-1 mt-0.5 uppercase"><i data-lucide="clock" class="h-3 w-3 text-[#FFC72C]"></i> ${t.schedule}</p>
                                 </td>
-                                <td class="px-5 py-4 text-center font-black text-gray-700">${paxLabel}</td>
-                                <td class="px-5 py-4 text-center font-black text-gray-700">${t.sessions}</td>
+                                <td class="px-5 py-4 text-center font-black text-gray-700">${finalPax}</td>
+                                <td class="px-5 py-4 text-center font-black text-gray-700">${finalSessions}</td>
                                 <td class="px-5 py-4 font-black text-[#E31837] text-sm">$${pay.toFixed(2)}</td>
                                 <td class="px-5 py-4 text-right whitespace-nowrap">
                                     <button onclick="window.showTeacherDetails('${t.id}')" class="text-gray-400 hover:text-[#E31837] p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors mx-0.5" title="Attendance & Details"><i data-lucide="eye" class="h-4 w-4"></i></button>
