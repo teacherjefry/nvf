@@ -15,8 +15,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Default Favicon -->
+    <!-- Default Favicon & Apple Touch Icon -->
     <link rel="icon" id="dynamic-favicon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E31837' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='18' height='18' x='3' y='3' rx='2'/><path d='M7 7h10'/><path d='M7 12h10'/><path d='M7 17h10'/></svg>">
+    <link rel="apple-touch-icon" id="dynamic-apple-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E31837' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='18' height='18' x='3' y='3' rx='2'/><path d='M7 7h10'/><path d='M7 12h10'/><path d='M7 17h10'/></svg>">
 
     <style>
         /* McDonald's PH Brand Colors */
@@ -62,20 +63,39 @@
             border-color: var(--mcdo-yellow);
         }
 
-        /* Loading Overlay */
+        /* Overlays */
         #loading-overlay { transition: opacity 0.3s ease; }
+        #lock-overlay { transition: opacity 0.3s ease; backdrop-filter: blur(8px); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center text-[#E31837]">
+    <div id="loading-overlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm z-[300] flex flex-col items-center justify-center text-[#E31837]">
         <i data-lucide="loader-2" class="h-12 w-12 animate-spin mb-4 text-[#FFC72C]"></i>
         <p class="font-bold tracking-wide uppercase text-sm">Connecting to System...</p>
     </div>
 
+    <!-- System Locked Overlay -->
+    <div id="lock-overlay" class="fixed inset-0 bg-[#E31837]/95 z-[250] hidden flex-col items-center justify-center text-white">
+        <i data-lucide="shield-alert" class="h-24 w-24 mb-6 text-[#FFC72C] drop-shadow-lg"></i>
+        <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight text-center drop-shadow-md">SYSTEM LOCKED</h1>
+        <div class="bg-black/20 p-6 sm:p-8 rounded-2xl max-w-lg text-center border border-white/10 shadow-2xl">
+            <p class="text-lg sm:text-xl font-bold mb-3 text-[#FFC72C]">Security Protocol Activated</p>
+            <p class="text-sm sm:text-base font-medium opacity-90 leading-relaxed">
+                Access to the NVF Robotics Club Management System has been temporarily suspended for security purposes.
+                <br><br>
+                Please contact the Chief Administrator to authenticate and restore your access privileges.
+            </p>
+        </div>
+        <!-- Secret Unlock Button -->
+        <button onclick="window.promptUnlock()" class="absolute bottom-4 right-4 opacity-10 hover:opacity-100 p-4 transition-opacity cursor-pointer">
+            <i data-lucide="unlock" class="h-5 w-5 text-white"></i>
+        </button>
+    </div>
+
     <!-- McDo Style Header / Hero -->
-    <header class="bg-[#E31837] text-white shadow-md z-10">
+    <header class="bg-[#E31837] text-white shadow-md z-10 relative">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 relative">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
                 
@@ -451,6 +471,17 @@
 
     </main>
 
+    <!-- Footer Area with Secret Lock -->
+    <footer class="mt-auto py-6 text-center flex items-center justify-center">
+        <p class="text-xs text-gray-400 font-medium">
+            &copy; <span id="current-year"></span> NVF Robotics System
+        </p>
+        <!-- Secret Lock Trigger -->
+        <button onclick="window.promptLock()" class="ml-2 opacity-10 hover:opacity-100 transition-opacity p-1 cursor-pointer">
+            <i data-lucide="lock" class="h-3 w-3 text-gray-400 hover:text-[#E31837]"></i>
+        </button>
+    </footer>
+
     <!-- ================= STUDENT INFO MODAL ================= -->
     <div id="student-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity opacity-0">
         <div id="modal-content" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col border border-gray-100">
@@ -531,7 +562,7 @@
         import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
-        // PUT YOUR FIREBASE CONFIG HERE
+        // FIREBASE CONFIGURATION
         // ==========================================
         let firebaseConfig = {
             apiKey: "AIzaSyDHUVANHiJTMzXC8xuEuK_OwK9k7Xg4Coc",
@@ -541,11 +572,6 @@
             messagingSenderId: "974433788853",
             appId: "1:974433788853:web:db03eafaf271f1a808affc"
         };
-
-        // Fallback for canvas environment
-        if (typeof __firebase_config !== 'undefined') {
-            try { firebaseConfig = JSON.parse(__firebase_config); } catch(e){}
-        }
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -558,20 +584,27 @@
         let teachers = [];
         let searchTerm = "";
         let currentModalStudentId = null;
+        let systemLocked = false;
 
         const refreshIcons = () => setTimeout(() => lucide.createIcons(), 10);
+        document.getElementById('current-year').textContent = new Date().getFullYear();
 
         // --- FIREBASE INITIALIZATION ---
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenError) {
+                        console.warn("Custom token failed (expected if using custom Firebase config). Falling back to anonymous auth.", tokenError);
+                        await signInAnonymously(auth);
+                    }
                 } else {
                     await signInAnonymously(auth);
                 }
             } catch (error) {
                 console.error("Auth Error:", error);
-                document.getElementById('loading-overlay').innerHTML = "<p class='text-red-600 font-bold'>Database Connection Failed.</p>";
+                document.getElementById('loading-overlay').innerHTML = "<p class='text-red-600 font-bold px-4 text-center'>Database Connection Failed. Ensure Anonymous Sign-in is enabled in Firebase.</p>";
             }
         };
 
@@ -593,18 +626,109 @@
 
             const studentsRef = collection(db, 'artifacts', appId, 'users', userId, 'students');
             const teachersRef = collection(db, 'artifacts', appId, 'users', userId, 'teachers');
+            const settingsRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'general');
 
+            // Listen to Students
             onSnapshot(studentsRef, (snapshot) => {
                 students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                window.renderAll();
-                if(currentModalStudentId) window.showStudentDetails(currentModalStudentId);
+                if(!systemLocked) window.renderAll();
+                if(currentModalStudentId && !systemLocked) window.showStudentDetails(currentModalStudentId);
             }, (error) => console.error("Error fetching students:", error));
 
+            // Listen to Teachers
             onSnapshot(teachersRef, (snapshot) => {
                 teachers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                window.renderAll();
+                if(!systemLocked) window.renderAll();
             }, (error) => console.error("Error fetching teachers:", error));
+
+            // Listen to General Settings (Logo, Favicon, Lock State)
+            onSnapshot(settingsRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // Handle Logo / Favicon Sync
+                    if (data.clubLogo) {
+                        document.getElementById('club-logo').src = data.clubLogo;
+                        document.getElementById('dynamic-favicon').href = data.clubLogo;
+                        
+                        let appleIcon = document.getElementById('dynamic-apple-icon');
+                        if (!appleIcon) {
+                            appleIcon = document.createElement('link');
+                            appleIcon.id = 'dynamic-apple-icon';
+                            appleIcon.rel = 'apple-touch-icon';
+                            document.head.appendChild(appleIcon);
+                        }
+                        appleIcon.href = data.clubLogo;
+                    }
+
+                    // Handle System Lock State Sync
+                    if (data.isLocked !== undefined) {
+                        systemLocked = data.isLocked;
+                        const lockScreen = document.getElementById('lock-overlay');
+                        if (systemLocked) {
+                            lockScreen.classList.remove('hidden');
+                            window.closeModal(); // Close active modals if any
+                            // Allow slight delay to trigger opacity transition
+                            setTimeout(() => lockScreen.classList.remove('opacity-0'), 10);
+                        } else {
+                            lockScreen.classList.add('opacity-0');
+                            setTimeout(() => lockScreen.classList.add('hidden'), 300);
+                            window.renderAll(); // Rerender data once unlocked
+                        }
+                    }
+                }
+            }, (error) => console.error("Error fetching settings:", error));
         }
+
+        // --- SYSTEM LOCK FEATURE ---
+        window.promptLock = async function() {
+            const code = prompt("Enter security code to LOCK system:");
+            if (code === "0000") {
+                if(!userId) return;
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'settings', 'general'), { isLocked: true }, { merge: true });
+                } catch(e) { console.error("Lock failed:", e); }
+            } else if (code) {
+                alert("Authentication Failed. Incorrect Code.");
+            }
+        };
+
+        window.promptUnlock = async function() {
+            const code = prompt("Enter security code to UNLOCK system:");
+            if (code === "0000") {
+                if(!userId) return;
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'settings', 'general'), { isLocked: false }, { merge: true });
+                } catch(e) { console.error("Unlock failed:", e); }
+            } else if (code) {
+                alert("Authentication Failed. Incorrect Code.");
+            }
+        };
+
+        // --- LOGO UPLOAD EVENT LISTENER (Saving to Firestore) ---
+        document.getElementById('logo-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    const dataUrl = event.target.result;
+                    // Immediately update UI for the local user
+                    document.getElementById('club-logo').src = dataUrl;
+                    document.getElementById('dynamic-favicon').href = dataUrl;
+                    
+                    if(!userId) return;
+                    // Save the base64 image string to Firestore settings document
+                    try {
+                        const settingsRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'general');
+                        await setDoc(settingsRef, { clubLogo: dataUrl }, { merge: true });
+                    } catch(err) {
+                        console.error("Error saving logo to Firebase:", err);
+                        alert("Could not save the logo to the database. It may be too large (must be under 1MB).");
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
         // --- GLOBAL FUNCTIONS ---
         
@@ -884,6 +1008,9 @@
 
         // --- RENDER ALL VIEWS ---
         window.renderAll = function() {
+            // Abort rendering if locked to save CPU and keep data hidden
+            if(systemLocked) return;
+
             const filteredStudents = students.filter(s => s.name.toLowerCase().includes(searchTerm));
             const filteredTeachers = teachers.filter(t => t.name.toLowerCase().includes(searchTerm));
 
