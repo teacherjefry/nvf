@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVF Robotics Club - Management</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts: Poppins & Noto Sans Lao -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Default Favicon -->
+    <link rel="icon" id="dynamic-favicon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E31837' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='18' height='18' x='3' y='3' rx='2'/><path d='M7 7h10'/><path d='M7 12h10'/><path d='M7 17h10'/></svg>">
+
+    <style>
+        /* McDonald's PH Brand Colors */
+        :root {
+            --mcdo-red: #E31837;
+            --mcdo-yellow: #FFC72C;
+            --mcdo-dark: #292929;
+            --mcdo-light: #F5F5F5;
+        }
+
+        /* Prioritize Phetsarath OT for Lao, fallback to Poppins and Noto Sans Lao */
+        body { 
+            font-family: 'Phetsarath OT', 'Poppins', 'Noto Sans Lao', sans-serif; 
+            background-color: var(--mcdo-light); 
+            color: var(--mcdo-dark);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .mc-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .tab-btn { 
+            transition: all 0.2s ease; 
+            white-space: nowrap;
+        }
+        .tab-btn.active {
+            background-color: var(--mcdo-yellow);
+            color: var(--mcdo-dark);
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(255, 199, 44, 0.4);
+            border-color: var(--mcdo-yellow);
+        }
+
+        /* Loading Overlay */
+        #loading-overlay { transition: opacity 0.3s ease; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center text-[#E31837]">
+        <i data-lucide="loader-2" class="h-12 w-12 animate-spin mb-4 text-[#FFC72C]"></i>
+        <p class="font-bold tracking-wide uppercase text-sm">Connecting to System...</p>
+    </div>
+
+    <!-- McDo Style Header / Hero -->
+    <header class="bg-[#E31837] text-white shadow-md z-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 relative">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
+                
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-4">
+                    <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logo-upload').click()">
+                        <div class="h-12 w-12 sm:h-16 sm:w-16 bg-white rounded-2xl shadow-lg flex items-center justify-center p-1.5 overflow-hidden transition-transform transform group-hover:scale-105 border-2 border-transparent group-hover:border-[#FFC72C]">
+                            <img id="club-logo" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E31837' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 8V4H8'/><rect width='16' height='12' x='4' y='8' rx='2'/><path d='M2 14h2'/><path d='M20 14h2'/><path d='M15 13v2'/><path d='M9 13v2'/></svg>" alt="Logo" class="w-full h-full object-contain">
+                        </div>
+                        <input type="file" id="logo-upload" class="hidden" accept="image/*">
+                    </div>
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">NVF Robotics</h1>
+                        <p class="text-xs sm:text-sm text-[#FFC72C] font-bold tracking-widest uppercase">Club Management</p>
+                    </div>
+                </div>
+
+                <!-- Global Search Bar -->
+                <div class="flex-grow max-w-lg mx-auto md:mx-0 w-full">
+                    <div class="relative flex items-center shadow-sm">
+                        <i data-lucide="search" class="absolute left-4 h-5 w-5 text-gray-400"></i>
+                        <input type="text" id="global-search" oninput="handleSearch(this.value)" placeholder="Search for students or instructors..." class="w-full pl-11 pr-16 py-3 bg-white rounded-full text-sm text-[#292929] placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all font-medium">
+                        <button onclick="clearSearch()" class="absolute right-2 bg-gray-100 hover:bg-gray-200 text-gray-600 p-1.5 rounded-full transition-colors"><i data-lucide="x" class="h-4 w-4"></i></button>
+                    </div>
+                </div>
+
+                <!-- Print Button -->
+                <button onclick="window.print()" class="hidden md:flex items-center gap-2 px-5 py-2.5 bg-[#FFC72C] hover:bg-[#ffb300] text-[#292929] rounded-full text-sm font-bold shadow-md transition-all transform hover:-translate-y-0.5">
+                    <i data-lucide="printer" class="h-4 w-4"></i> Print Report
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Pills (Category Style) -->
+    <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="overflow-x-auto no-scrollbar py-3">
+                <div class="flex gap-2 min-w-max">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                        <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Overview
+                    </button>
+                    <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                        <i data-lucide="users" class="h-4 w-4"></i> Students
+                    </button>
+                    <button onclick="switchTab('teachers')" id="tab-teachers" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                        <i data-lucide="cpu" class="h-4 w-4"></i> Instructors
+                    </button>
+                    <button onclick="switchTab('history')" id="tab-history" class="tab-btn px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100">
+                        <i data-lucide="history" class="h-4 w-4"></i> History
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
+        
+        <!-- ================= VIEW: DASHBOARD ================= -->
+        <div id="view-dashboard" class="space-y-6">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <!-- KPI Cards -->
+                <div class="mc-card p-5 sm:p-6 border-b-4 border-b-[#FFC72C]">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Total Revenue</p>
+                            <h3 class="text-2xl sm:text-3xl font-black text-[#292929]">$<span id="dash-revenue">0.00</span></h3>
+                        </div>
+                        <div class="p-2.5 bg-yellow-50 rounded-full hidden sm:block"><i data-lucide="banknote" class="h-5 w-5 text-[#FFC72C]"></i></div>
+                    </div>
+                </div>
+                <div class="mc-card p-5 sm:p-6 border-b-4 border-b-[#E31837]">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Salaries</p>
+                            <h3 class="text-2xl sm:text-3xl font-black text-[#292929]">$<span id="dash-salaries">0.00</span></h3>
+                        </div>
+                        <div class="p-2.5 bg-red-50 rounded-full hidden sm:block"><i data-lucide="wallet" class="h-5 w-5 text-[#E31837]"></i></div>
+                    </div>
+                </div>
+                <div class="mc-card p-5 sm:p-6 border-b-4 border-b-green-500 col-span-2 sm:col-span-1 bg-green-50/30">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-bold text-green-700 uppercase tracking-wider mb-1">Net Profit</p>
+                            <h3 class="text-2xl sm:text-3xl font-black text-green-600">$<span id="dash-profit">0.00</span></h3>
+                        </div>
+                        <div class="p-2.5 bg-green-100 rounded-full"><i data-lucide="trending-up" class="h-5 w-5 text-green-700"></i></div>
+                    </div>
+                </div>
+                <div class="mc-card p-5 sm:p-6 border-b-4 border-b-orange-500 col-span-2 sm:col-span-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-bold text-orange-700 uppercase tracking-wider mb-1">Unpaid Dues</p>
+                            <h3 class="text-2xl sm:text-3xl font-black text-orange-600">$<span id="dash-unpaid">0.00</span></h3>
+                        </div>
+                        <div class="p-2.5 bg-orange-50 rounded-full"><i data-lucide="alert-circle" class="h-5 w-5 text-orange-600"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Salary Breakdown -->
+                <div class="mc-card p-5 sm:p-6">
+                    <h3 class="text-lg font-bold text-[#292929] mb-4 flex items-center gap-2">
+                        <i data-lucide="receipt" class="h-5 w-5 text-[#E31837]"></i> Instructor Matrix
+                    </h3>
+                    <div class="overflow-x-auto rounded-xl border border-gray-200">
+                        <table class="w-full text-sm text-left whitespace-nowrap">
+                            <thead class="text-[11px] text-gray-500 uppercase bg-gray-100 font-bold tracking-wider">
+                                <tr>
+                                    <th class="px-4 py-3">Instructor</th>
+                                    <th class="px-4 py-3 text-center">Capacity</th>
+                                    <th class="px-4 py-3 text-right">Payout</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-teacher-list" class="divide-y divide-gray-100 bg-white">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Registration Stats -->
+                <div class="mc-card p-5 sm:p-6">
+                    <h3 class="text-lg font-bold text-[#292929] mb-4 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="h-5 w-5 text-[#FFC72C]"></i> Analytics Overview
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2.5 bg-blue-50 text-blue-600 rounded-full"><i data-lucide="users" class="h-5 w-5"></i></div>
+                                <div><p class="text-sm font-bold text-gray-700">Active Cadets</p></div>
+                            </div>
+                            <span class="text-2xl font-black text-[#292929]" id="stat-total-students">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2.5 bg-purple-50 text-purple-600 rounded-full"><i data-lucide="star" class="h-5 w-5"></i></div>
+                                <div><p class="text-sm font-bold text-gray-700">Founding Members</p></div>
+                            </div>
+                            <span class="text-2xl font-black text-[#292929]" id="stat-founding">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2.5 bg-green-50 text-green-600 rounded-full"><i data-lucide="gift" class="h-5 w-5"></i></div>
+                                <div><p class="text-sm font-bold text-gray-700">Sponsored/Free</p></div>
+                            </div>
+                            <span class="text-2xl font-black text-[#292929]" id="stat-free">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2.5 bg-orange-50 text-orange-600 rounded-full"><i data-lucide="box" class="h-5 w-5"></i></div>
+                                <div><p class="text-sm font-bold text-gray-700">Kit Rentals</p></div>
+                            </div>
+                            <span class="text-2xl font-black text-[#292929]" id="stat-kits">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: STUDENTS ================= -->
+        <div id="view-students" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add/Edit Form -->
+                <div class="mc-card p-6 lg:col-span-1 h-fit order-2 lg:order-1 sticky top-24 border-t-4 border-t-[#E31837]">
+                    <h3 class="text-xl font-black text-[#292929] mb-5 flex items-center gap-2" id="student-form-title">
+                        <i data-lucide="user-plus" class="h-6 w-6 text-[#E31837]"></i> Register Cadet
+                    </h3>
+                    <form id="student-form" class="space-y-4" onsubmit="window.saveStudent(event)">
+                        <input type="hidden" id="student-id">
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Full Name</label>
+                            <input type="text" id="s-name" placeholder="Enter name (Lao/Eng)" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Enroll Date</label>
+                                <input type="date" id="s-date" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Status</label>
+                                <select id="s-status" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                                    <option value="Paid">Paid</option>
+                                    <option value="Unpaid">Unpaid</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Term Enrolled</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="s-term-start" placeholder="e.g. Jan" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all text-center">
+                                <span class="text-gray-400 font-bold">-</span>
+                                <input type="text" id="s-term-end" placeholder="e.g. Mar" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all text-center">
+                            </div>
+                        </div>
+
+                        <div class="p-5 bg-[#fff9e6] rounded-2xl space-y-3 border border-[#FFC72C]/30 relative">
+                            <div class="flex justify-between items-center border-b border-yellow-200 pb-2 mb-3">
+                                <span class="text-xs font-black text-[#292929] uppercase tracking-wide">Fee Config</span>
+                                <span class="text-xs font-bold text-[#E31837] bg-white px-2 py-0.5 rounded-full shadow-sm">Base: $70</span>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" id="s-kit" onchange="window.updateLiveFee()" class="w-5 h-5 text-[#E31837] bg-white border-gray-300 rounded focus:ring-[#E31837]">
+                                    <span class="text-sm font-bold text-gray-700 group-hover:text-black">Kit Rental <span class="text-[#E31837]">(+$20)</span></span>
+                                </label>
+
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" id="s-founding" onchange="window.updateLiveFee()" class="w-5 h-5 text-[#E31837] bg-white border-gray-300 rounded focus:ring-[#E31837]">
+                                    <span class="text-sm font-bold text-gray-700 group-hover:text-black">Founding <span class="text-green-600">(-$20)</span></span>
+                                </label>
+
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" id="s-free" onchange="window.updateLiveFee()" class="w-5 h-5 text-[#E31837] bg-white border-gray-300 rounded focus:ring-[#E31837]">
+                                    <span class="text-sm font-bold text-gray-700 group-hover:text-black">Sponsored <span class="text-green-600">($0)</span></span>
+                                </label>
+
+                                <div class="flex items-center justify-between pt-2">
+                                    <label class="text-sm font-bold text-gray-700">Manual Discount</label>
+                                    <div class="relative w-28">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                                        <input type="number" id="s-discount" oninput="window.updateLiveFee()" min="0" value="0" class="w-full pl-7 pr-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none transition-all text-right">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-3 border-t border-yellow-200 flex justify-between items-center">
+                                <span class="text-sm font-bold text-[#292929]">Total Monthly:</span>
+                                <span class="text-2xl font-black text-[#E31837]">$<span id="s-live-fee">70</span></span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 pt-3">
+                            <button type="submit" class="flex-1 bg-[#E31837] hover:bg-[#c6102b] text-white py-3 rounded-xl text-sm font-bold shadow-md shadow-red-500/30 transition-all active:scale-95">Save Cadet</button>
+                            <button type="button" onclick="window.resetStudentForm()" class="px-5 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl text-sm font-bold transition-all">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Data Table -->
+                <div class="mc-card p-6 lg:col-span-2 flex flex-col order-1 lg:order-2">
+                    <h3 class="text-xl font-black text-[#292929] mb-5">Student Directory</h3>
+                    <div class="overflow-x-auto flex-grow rounded-xl border border-gray-200">
+                        <table class="w-full text-sm text-left whitespace-nowrap bg-white">
+                            <thead class="text-[11px] text-gray-500 uppercase bg-gray-50 font-bold tracking-wider">
+                                <tr>
+                                    <th class="px-5 py-4 border-b border-gray-200">Student Name</th>
+                                    <th class="px-5 py-4 border-b border-gray-200">Status</th>
+                                    <th class="px-5 py-4 border-b border-gray-200">Fee</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body" class="divide-y divide-gray-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: TEACHERS ================= -->
+        <div id="view-teachers" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add/Edit Form -->
+                <div class="mc-card p-6 lg:col-span-1 h-fit order-2 lg:order-1 border-t-4 border-t-[#FFC72C]">
+                    <h3 class="text-xl font-black text-[#292929] mb-5 flex items-center gap-2" id="teacher-form-title">
+                        <i data-lucide="circuit-board" class="h-6 w-6 text-[#FFC72C]"></i> Setup Instructor
+                    </h3>
+                    <div class="bg-[#fff9e6] p-4 rounded-xl border border-yellow-200 mb-5 text-xs text-gray-700 font-medium leading-relaxed">
+                        <strong class="text-black">Pay Rule:</strong> $10 base per class (max 15 pax/class) + $1 per student head. Total multiplied by sessions taught.
+                    </div>
+                    <form id="teacher-form" class="space-y-4" onsubmit="window.saveTeacher(event)">
+                        <input type="hidden" id="teacher-id">
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Instructor Name</label>
+                            <input type="text" id="t-name" placeholder="Enter name" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Student Pax</label>
+                                <input type="number" id="t-students" min="0" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Total Sessions</label>
+                                <input type="number" id="t-sessions" min="1" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Schedule</label>
+                            <input type="text" id="t-schedule" required placeholder="e.g. Mon 4PM-6PM" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] outline-none text-sm font-medium transition-all">
+                        </div>
+
+                        <div class="flex gap-3 pt-3">
+                            <button type="submit" class="flex-1 bg-[#FFC72C] hover:bg-[#ffb300] text-[#292929] py-3 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95">Save Record</button>
+                            <button type="button" onclick="window.resetTeacherForm()" class="px-5 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl text-sm font-bold transition-all">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Data Table -->
+                <div class="mc-card p-6 lg:col-span-2 flex flex-col order-1 lg:order-2">
+                    <h3 class="text-xl font-black text-[#292929] mb-5">Instructor Roster</h3>
+                    <div class="overflow-x-auto flex-grow rounded-xl border border-gray-200">
+                        <table class="w-full text-sm text-left whitespace-nowrap bg-white">
+                            <thead class="text-[11px] text-gray-500 uppercase bg-gray-50 font-bold tracking-wider">
+                                <tr>
+                                    <th class="px-5 py-4 border-b border-gray-200">Instructor & Time</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Pax</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-center">Sessions</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 font-bold text-[#E31837]">Est. Pay</th>
+                                    <th class="px-5 py-4 border-b border-gray-200 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacher-table-body" class="divide-y divide-gray-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: HISTORY ================= -->
+        <div id="view-history" class="hidden space-y-5">
+            <div class="mc-card p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-l-4 border-l-[#292929]">
+                <div>
+                    <h3 class="text-xl font-black text-[#292929] flex items-center gap-2">
+                        <i data-lucide="database" class="h-6 w-6 text-[#292929]"></i> Enrollment Database
+                    </h3>
+                    <p class="text-xs font-medium text-gray-500 mt-1">View and filter historical student records.</p>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto bg-gray-50 p-1.5 rounded-xl border border-gray-200 shadow-inner">
+                    <div class="relative flex-grow sm:w-auto">
+                        <i data-lucide="calendar" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></i>
+                        <input type="month" id="history-filter-month" onchange="window.renderAll()" class="w-full pl-9 pr-3 py-2 text-sm bg-transparent outline-none cursor-pointer font-bold text-gray-700">
+                    </div>
+                    <button onclick="document.getElementById('history-filter-month').value=''; window.renderAll();" class="px-4 py-2 bg-white hover:bg-gray-100 text-[#E31837] rounded-lg text-xs font-black uppercase tracking-wide transition-colors shadow-sm">Clear</button>
+                </div>
+            </div>
+
+            <div class="mc-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left whitespace-nowrap bg-white">
+                        <thead class="text-[11px] text-gray-500 uppercase bg-gray-50 font-bold tracking-wider">
+                            <tr>
+                                <th class="px-5 py-4 border-b border-gray-200">Enrolled Date</th>
+                                <th class="px-5 py-4 border-b border-gray-200">Student Name</th>
+                                <th class="px-5 py-4 border-b border-gray-200">Term</th>
+                                <th class="px-5 py-4 border-b border-gray-200">Attributes</th>
+                                <th class="px-5 py-4 border-b border-gray-200 text-right">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-gray-100">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="history-empty" class="hidden p-10 text-center text-gray-400">
+                    <i data-lucide="search-x" class="h-10 w-10 mx-auto mb-3 text-gray-300"></i>
+                    <p class="text-sm font-bold uppercase tracking-wide">No records found.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ================= STUDENT INFO MODAL ================= -->
+    <div id="student-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity opacity-0">
+        <div id="modal-content" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col border border-gray-100">
+            
+            <!-- Modal Header -->
+            <div class="bg-[#E31837] relative p-6 pb-5 text-center shrink-0">
+                <button onclick="window.closeModal()" class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 rounded-full p-2 transition-colors">
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                </button>
+                <div class="relative mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-3 shadow-lg transform rotate-3">
+                    <i data-lucide="user" class="h-8 w-8 text-[#E31837]"></i>
+                </div>
+                <h2 id="modal-name" class="text-2xl font-black text-white tracking-wide">Student Name</h2>
+                <p id="modal-id-badge" class="text-xs text-[#FFC72C] font-bold mt-1 uppercase tracking-widest">ID: #000000</p>
+            </div>
+            
+            <!-- Modal Scrollable Body -->
+            <div class="p-6 overflow-y-auto flex-grow custom-scrollbar space-y-5 bg-[#fcfcfc]">
+                
+                <!-- Main Info -->
+                <div class="space-y-3 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2"><i data-lucide="calendar" class="h-3.5 w-3.5"></i> Enrolled</span>
+                        <span id="modal-enroll-date" class="text-sm font-bold text-gray-800">YYYY-MM-DD</span>
+                    </div>
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2"><i data-lucide="clock" class="h-3.5 w-3.5"></i> Term</span>
+                        <span id="modal-term" class="text-sm font-bold text-gray-800">Jan - Mar</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2"><i data-lucide="credit-card" class="h-3.5 w-3.5"></i> Status</span>
+                        <span id="modal-status" class="px-3 py-1 rounded-full text-xs font-black">Paid</span>
+                    </div>
+                </div>
+                
+                <!-- Attributes -->
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">System Attributes</p>
+                    <div id="modal-tags" class="flex flex-wrap gap-2">
+                        <!-- Tags injected -->
+                    </div>
+                </div>
+
+                <!-- Monthly History Section -->
+                <div class="pt-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-sm font-black text-[#292929] flex items-center gap-2 uppercase tracking-wide"><i data-lucide="history" class="h-4 w-4 text-[#FFC72C]"></i> Monthly Record</h4>
+                    </div>
+                    
+                    <div id="modal-history-list" class="space-y-2 mb-4 max-h-36 overflow-y-auto pr-2">
+                        <!-- History items injected here -->
+                    </div>
+
+                    <!-- Add History Form -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex gap-2 items-center focus-within:border-[#FFC72C] transition-colors">
+                        <input type="month" id="mh-month" class="w-full px-2 py-1.5 text-sm font-bold text-gray-700 bg-transparent outline-none">
+                        <select id="mh-status" class="px-2 py-1.5 text-sm font-bold text-gray-700 bg-transparent border-l border-gray-200 outline-none">
+                            <option value="Paid">Paid</option>
+                            <option value="Unpaid">Unpaid</option>
+                        </select>
+                        <button onclick="window.addMonthlyRecord()" class="shrink-0 bg-[#FFC72C] hover:bg-[#ffb300] text-black p-2 rounded-lg transition-colors shadow-sm"><i data-lucide="plus" class="h-4 w-4 font-bold"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer (Fee) -->
+            <div class="bg-white p-5 border-t border-gray-100 shrink-0 flex justify-between items-center shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Configured Fee</span>
+                <span id="modal-fee" class="text-3xl font-black text-[#E31837] tracking-tight">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic with Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // PUT YOUR FIREBASE CONFIG HERE
+        // ==========================================
+        let firebaseConfig = {
+            apiKey: "AIzaSyDHUVANHiJTMzXC8xuEuK_OwK9k7Xg4Coc",
+            authDomain: "neerada-payroll.firebaseapp.com",
+            projectId: "neerada-payroll",
+            storageBucket: "neerada-payroll.firebasestorage.app",
+            messagingSenderId: "974433788853",
+            appId: "1:974433788853:web:db03eafaf271f1a808affc"
+        };
+
+        // Fallback for canvas environment
+        if (typeof __firebase_config !== 'undefined') {
+            try { firebaseConfig = JSON.parse(__firebase_config); } catch(e){}
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nvf-robotics';
+        let userId = null;
+
+        // In-memory state
+        let students = [];
+        let teachers = [];
+        let searchTerm = "";
+        let currentModalStudentId = null;
+
+        const refreshIcons = () => setTimeout(() => lucide.createIcons(), 10);
+
+        // --- FIREBASE INITIALIZATION ---
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                document.getElementById('loading-overlay').innerHTML = "<p class='text-red-600 font-bold'>Database Connection Failed.</p>";
+            }
+        };
+
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userId = user.uid;
+                setupRealtimeListeners();
+                
+                const loader = document.getElementById('loading-overlay');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.classList.add('hidden'), 300);
+            }
+        });
+
+        function setupRealtimeListeners() {
+            if (!userId) return;
+
+            const studentsRef = collection(db, 'artifacts', appId, 'users', userId, 'students');
+            const teachersRef = collection(db, 'artifacts', appId, 'users', userId, 'teachers');
+
+            onSnapshot(studentsRef, (snapshot) => {
+                students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                window.renderAll();
+                if(currentModalStudentId) window.showStudentDetails(currentModalStudentId);
+            }, (error) => console.error("Error fetching students:", error));
+
+            onSnapshot(teachersRef, (snapshot) => {
+                teachers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                window.renderAll();
+            }, (error) => console.error("Error fetching teachers:", error));
+        }
+
+        // --- GLOBAL FUNCTIONS ---
+        
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'bg-[#FFC72C]', 'text-[#292929]', 'border-[#FFC72C]'));
+            const btn = document.getElementById(`tab-${tabId}`);
+            if(btn) btn.classList.add('active');
+            
+            ['dashboard', 'students', 'teachers', 'history'].forEach(id => {
+                document.getElementById(`view-${id}`).classList.add('hidden');
+            });
+            
+            const view = document.getElementById(`view-${tabId}`);
+            if(view) view.classList.remove('hidden');
+
+            window.location.hash = tabId;
+            if(tabId === 'history') window.renderAll();
+        };
+
+        const initialTab = window.location.hash.replace('#', '') || 'dashboard';
+        window.switchTab(initialTab);
+
+        window.handleSearch = function(val) {
+            searchTerm = val.toLowerCase();
+            window.renderAll();
+        };
+
+        window.clearSearch = function() {
+            searchTerm = "";
+            const searchInput = document.getElementById('global-search');
+            if(searchInput) searchInput.value = "";
+            window.renderAll();
+        };
+
+        window.calculateStudentFee = function(isFounding, needsKit, isFree, manualDiscount) {
+            if (isFree) return 0;
+            let base = 70; 
+            if (needsKit) base += 20; 
+            if (isFounding) base -= 20; 
+            base -= manualDiscount;
+            return Math.max(0, base); 
+        };
+
+        window.updateLiveFee = function() {
+            const isFounding = document.getElementById('s-founding').checked;
+            const needsKit = document.getElementById('s-kit').checked;
+            const isFree = document.getElementById('s-free').checked;
+            const manualDiscount = parseFloat(document.getElementById('s-discount').value) || 0;
+            
+            const fee = window.calculateStudentFee(isFounding, needsKit, isFree, manualDiscount);
+            document.getElementById('s-live-fee').textContent = fee.toFixed(2);
+        };
+
+        // --- CRUD OPERATIONS ---
+        
+        window.saveStudent = async function(e) {
+            e.preventDefault();
+            if(!userId) return;
+
+            const isFounding = document.getElementById('s-founding').checked;
+            const needsKit = document.getElementById('s-kit').checked;
+            const isFree = document.getElementById('s-free').checked;
+            const manualDiscount = parseFloat(document.getElementById('s-discount').value) || 0;
+            
+            const studentObj = {
+                name: document.getElementById('s-name').value,
+                enrollDate: document.getElementById('s-date').value,
+                termStart: document.getElementById('s-term-start').value,
+                termEnd: document.getElementById('s-term-end').value,
+                status: document.getElementById('s-status').value,
+                isFounding, needsKit, isFree, manualDiscount,
+                fee: window.calculateStudentFee(isFounding, needsKit, isFree, manualDiscount),
+                history: [] 
+            };
+
+            const idStr = document.getElementById('student-id').value;
+            const docId = idStr || Date.now().toString();
+
+            if (idStr) {
+                const existing = students.find(s => s.id === idStr);
+                if (existing && existing.history) studentObj.history = existing.history;
+            }
+
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', docId), studentObj);
+                window.resetStudentForm();
+            } catch (err) { console.error("Error saving student", err); }
+        };
+
+        window.deleteStudent = async function(id) {
+            if(!userId) return;
+            if(confirm('Permanently delete this student record?')) {
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', id.toString())); } 
+                catch(err) { console.error(err); }
+            }
+        };
+
+        window.saveTeacher = async function(e) {
+            e.preventDefault();
+            if(!userId) return;
+
+            const teacherObj = {
+                name: document.getElementById('t-name').value,
+                studentsHandling: parseInt(document.getElementById('t-students').value) || 0,
+                sessions: parseInt(document.getElementById('t-sessions').value) || 1,
+                schedule: document.getElementById('t-schedule').value
+            };
+
+            const idStr = document.getElementById('teacher-id').value;
+            const docId = idStr || Date.now().toString();
+
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'teachers', docId), teacherObj);
+                window.resetTeacherForm();
+            } catch(err) { console.error(err); }
+        };
+
+        window.deleteTeacher = async function(id) {
+            if(!userId) return;
+            if(confirm('Remove this instructor?')) {
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'teachers', id.toString())); } 
+                catch(err) { console.error(err); }
+            }
+        };
+
+        window.resetStudentForm = function() {
+            document.getElementById('student-form').reset();
+            document.getElementById('student-id').value = '';
+            document.getElementById('student-form-title').innerHTML = '<i data-lucide="user-plus" class="h-6 w-6 text-[#E31837]"></i> Register Cadet';
+            document.getElementById('s-date').valueAsDate = new Date();
+            window.updateLiveFee();
+            refreshIcons();
+        };
+
+        window.editStudent = function(id) {
+            const s = students.find(s => s.id === id.toString());
+            if(!s) return;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('student-form-title').innerHTML = '<i data-lucide="edit-3" class="h-6 w-6 text-[#E31837]"></i> Update Cadet Record';
+            document.getElementById('student-id').value = s.id;
+            document.getElementById('s-name').value = s.name;
+            document.getElementById('s-date').value = s.enrollDate;
+            document.getElementById('s-term-start').value = s.termStart;
+            document.getElementById('s-term-end').value = s.termEnd;
+            document.getElementById('s-status').value = s.status;
+            
+            document.getElementById('s-founding').checked = s.isFounding || false;
+            document.getElementById('s-kit').checked = s.needsKit || false;
+            document.getElementById('s-free').checked = s.isFree || false;
+            document.getElementById('s-discount').value = s.manualDiscount || 0;
+            
+            window.updateLiveFee();
+            refreshIcons();
+        };
+
+        window.resetTeacherForm = function() {
+            document.getElementById('teacher-form').reset();
+            document.getElementById('teacher-id').value = '';
+            document.getElementById('teacher-form-title').innerHTML = '<i data-lucide="circuit-board" class="h-6 w-6 text-[#FFC72C]"></i> Setup Instructor';
+            refreshIcons();
+        };
+
+        window.editTeacher = function(id) {
+            const t = teachers.find(t => t.id === id.toString());
+            if(!t) return;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('teacher-form-title').innerHTML = '<i data-lucide="edit-3" class="h-6 w-6 text-[#FFC72C]"></i> Edit Instructor';
+            document.getElementById('teacher-id').value = t.id;
+            document.getElementById('t-name').value = t.name;
+            document.getElementById('t-students').value = t.studentsHandling;
+            document.getElementById('t-sessions').value = t.sessions;
+            document.getElementById('t-schedule').value = t.schedule;
+            refreshIcons();
+        };
+
+        // --- MODAL & MONTHLY HISTORY LOGIC ---
+        window.showStudentDetails = function(id) {
+            currentModalStudentId = id.toString();
+            const s = students.find(st => st.id === currentModalStudentId);
+            if(!s) return;
+
+            document.getElementById('modal-name').textContent = s.name;
+            document.getElementById('modal-id-badge').textContent = `ID: #${s.id.slice(-6)}`;
+            document.getElementById('modal-enroll-date').textContent = s.enrollDate;
+            document.getElementById('modal-term').textContent = `${s.termStart} - ${s.termEnd}`;
+            document.getElementById('modal-fee').textContent = `$${s.fee.toFixed(2)}`;
+
+            const statusEl = document.getElementById('modal-status');
+            statusEl.textContent = s.status;
+            statusEl.className = s.status === 'Paid' 
+                ? 'px-3 py-1 rounded-full text-xs font-black bg-green-100 text-green-700' 
+                : 'px-3 py-1 rounded-full text-xs font-black bg-red-100 text-red-700';
+
+            let tagsHtml = '';
+            if(s.isFree) tagsHtml += `<span class="px-2.5 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-bold border border-green-200">Sponsored/Free</span>`;
+            if(s.isFounding) tagsHtml += `<span class="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-200">Founding (-$20)</span>`;
+            if(s.needsKit) tagsHtml += `<span class="px-2.5 py-1 bg-orange-50 text-orange-700 rounded-lg text-xs font-bold border border-orange-200">Kit Rental (+$20)</span>`;
+            if(s.manualDiscount > 0) tagsHtml += `<span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold border border-blue-200">Discount (-$${s.manualDiscount})</span>`;
+            
+            if(!tagsHtml) tagsHtml = `<span class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold border border-gray-200">Base $70 / Own Kit</span>`;
+            document.getElementById('modal-tags').innerHTML = tagsHtml;
+
+            const histList = document.getElementById('modal-history-list');
+            histList.innerHTML = '';
+            const history = s.history || [];
+            
+            if (history.length === 0) {
+                histList.innerHTML = `<p class="text-xs text-gray-400 font-medium italic">No monthly records added.</p>`;
+            } else {
+                [...history].sort((a,b) => b.month.localeCompare(a.month)).forEach((rec, idx) => {
+                    const c = rec.status === 'Paid' ? 'text-green-600' : 'text-red-500';
+                    histList.innerHTML += `
+                        <div class="flex justify-between items-center text-xs p-2.5 bg-white border border-gray-100 shadow-sm rounded-lg">
+                            <span class="font-black text-gray-700">${rec.month}</span>
+                            <div class="flex items-center gap-3">
+                                <span class="font-black uppercase tracking-wide ${c}">${rec.status}</span>
+                                <button onclick="window.removeMonthlyRecord(${idx})" class="text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="trash" class="h-4 w-4"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const modal = document.getElementById('student-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+            refreshIcons();
+        };
+
+        window.closeModal = function() {
+            currentModalStudentId = null;
+            const modal = document.getElementById('student-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+
+        window.addMonthlyRecord = async function() {
+            if (!userId || !currentModalStudentId) return;
+            const month = document.getElementById('mh-month').value;
+            const status = document.getElementById('mh-status').value;
+            if (!month) return alert('Please select a month');
+
+            const student = students.find(s => s.id === currentModalStudentId);
+            const newHistory = [...(student.history || []), { month, status }];
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', currentModalStudentId), {
+                    history: newHistory
+                });
+                document.getElementById('mh-month').value = '';
+            } catch(e) { console.error(e); }
+        };
+
+        window.removeMonthlyRecord = async function(index) {
+            if (!userId || !currentModalStudentId) return;
+            const student = students.find(s => s.id === currentModalStudentId);
+            const history = student.history || [];
+            const sorted = [...history].sort((a,b) => b.month.localeCompare(a.month));
+            const itemToRemove = sorted[index];
+            
+            const newHistory = history.filter(h => h !== itemToRemove);
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', currentModalStudentId), {
+                    history: newHistory
+                });
+            } catch(e) { console.error(e); }
+        };
+
+        // --- RENDER ALL VIEWS ---
+        window.renderAll = function() {
+            const filteredStudents = students.filter(s => s.name.toLowerCase().includes(searchTerm));
+            const filteredTeachers = teachers.filter(t => t.name.toLowerCase().includes(searchTerm));
+
+            // Dashboard Math
+            let totalRev = 0, unpaid = 0, foundingCount = 0, freeCount = 0, kitCount = 0;
+            students.forEach(s => {
+                totalRev += s.fee;
+                if (s.status === 'Unpaid') unpaid += s.fee;
+                if (s.isFounding) foundingCount++;
+                if (s.isFree) freeCount++;
+                if (s.needsKit) kitCount++;
+            });
+
+            let totalSalaries = 0;
+            const teacherListEl = document.getElementById('dash-teacher-list');
+            teacherListEl.innerHTML = '';
+            
+            teachers.forEach(t => {
+                // Fixed logic for 0 students handling
+                let classes = 0;
+                if (t.studentsHandling > 0 && t.studentsHandling <= 15) {
+                    classes = 1;
+                } else if (t.studentsHandling > 15) {
+                    classes = Math.ceil(t.studentsHandling / 10);
+                }
+
+                const pay = ((classes * 10) + (t.studentsHandling * 1)) * t.sessions;
+                totalSalaries += pay;
+
+                teacherListEl.innerHTML += `
+                    <tr class="border-b border-gray-50 hover:bg-[#fff9e6] transition-colors">
+                        <td class="px-4 py-3 font-bold text-gray-700">${t.name}</td>
+                        <td class="px-4 py-3 text-gray-500 font-medium text-[11px] text-center">${t.studentsHandling} pax / ${t.sessions} sess.</td>
+                        <td class="px-4 py-3 text-right font-black text-[#E31837]">$${pay.toFixed(2)}</td>
+                    </tr>`;
+            });
+            if (teachers.length === 0) teacherListEl.innerHTML = `<tr><td colspan="3" class="px-4 py-6 text-center text-gray-400 font-bold text-sm">No instructors active.</td></tr>`;
+
+            document.getElementById('dash-revenue').textContent = totalRev.toFixed(2);
+            document.getElementById('dash-salaries').textContent = totalSalaries.toFixed(2);
+            document.getElementById('dash-profit').textContent = (totalRev - totalSalaries).toFixed(2);
+            document.getElementById('dash-unpaid').textContent = unpaid.toFixed(2);
+            document.getElementById('stat-total-students').textContent = students.length;
+            document.getElementById('stat-founding').textContent = foundingCount;
+            document.getElementById('stat-free').textContent = freeCount;
+            
+            const statKitsEl = document.getElementById('stat-kits');
+            if (statKitsEl) statKitsEl.textContent = kitCount;
+
+            // Students Directory
+            const tbodyS = document.getElementById('student-table-body');
+            tbodyS.innerHTML = '';
+            if(filteredStudents.length === 0) {
+                tbodyS.innerHTML = `<tr><td colspan="4" class="px-5 py-8 text-center text-gray-400 font-bold text-sm">No cadets found.</td></tr>`;
+            } else {
+                [...filteredStudents].sort((a, b) => new Date(b.enrollDate) - new Date(a.enrollDate)).forEach(s => {
+                    const c = s.status === 'Paid' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200';
+                    tbodyS.innerHTML += `
+                        <tr class="hover:bg-[#fff9e6] border-b border-gray-100 transition-colors">
+                            <td class="px-5 py-4 cursor-pointer" onclick="window.showStudentDetails('${s.id}')">
+                                <p class="font-black text-[#292929] hover:text-[#E31837] transition-colors">${s.name}</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mt-0.5">${s.termStart}-${s.termEnd}</p>
+                            </td>
+                            <td class="px-5 py-4"><span class="px-2.5 py-1 rounded-md border text-[10px] font-black uppercase ${c}">${s.status}</span></td>
+                            <td class="px-5 py-4 font-black text-gray-800 text-sm">$${s.fee.toFixed(2)}</td>
+                            <td class="px-5 py-4 text-right whitespace-nowrap">
+                                <button onclick="window.showStudentDetails('${s.id}')" class="text-gray-400 hover:text-[#E31837] p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors mx-0.5"><i data-lucide="eye" class="h-4 w-4"></i></button>
+                                <button onclick="window.editStudent('${s.id}')" class="text-gray-400 hover:text-blue-600 p-2 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors mx-0.5"><i data-lucide="edit" class="h-4 w-4"></i></button>
+                                <button onclick="window.deleteStudent('${s.id}')" class="text-gray-400 hover:text-red-600 p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors mx-0.5"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            // Teachers Directory
+            const tbodyT = document.getElementById('teacher-table-body');
+            tbodyT.innerHTML = '';
+            if(filteredTeachers.length === 0) {
+                tbodyT.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-gray-400 font-bold text-sm">No instructors found.</td></tr>`;
+            } else {
+                filteredTeachers.forEach(t => {
+                    let classes = 0;
+                    if (t.studentsHandling > 0 && t.studentsHandling <= 15) {
+                        classes = 1;
+                    } else if (t.studentsHandling > 15) {
+                        classes = Math.ceil(t.studentsHandling / 10);
+                    }
+                    const pay = ((classes * 10) + (t.studentsHandling * 1)) * t.sessions;
+                    tbodyT.innerHTML += `
+                        <tr class="hover:bg-[#fff9e6] border-b border-gray-100 transition-colors">
+                            <td class="px-5 py-4">
+                                <p class="font-black text-[#292929]">${t.name}</p>
+                                <p class="text-[10px] text-gray-500 font-bold tracking-wide flex items-center gap-1 mt-0.5 uppercase"><i data-lucide="clock" class="h-3 w-3 text-[#FFC72C]"></i> ${t.schedule}</p>
+                            </td>
+                            <td class="px-5 py-4 text-center font-black text-gray-700">${t.studentsHandling}</td>
+                            <td class="px-5 py-4 text-center font-black text-gray-700">${t.sessions}</td>
+                            <td class="px-5 py-4 font-black text-[#E31837] text-sm">$${pay.toFixed(2)}</td>
+                            <td class="px-5 py-4 text-right whitespace-nowrap">
+                                <button onclick="window.editTeacher('${t.id}')" class="text-gray-400 hover:text-blue-600 p-2 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors mx-0.5"><i data-lucide="edit" class="h-4 w-4"></i></button>
+                                <button onclick="window.deleteTeacher('${t.id}')" class="text-gray-400 hover:text-red-600 p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors mx-0.5"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            // History Filter
+            const histFilter = document.getElementById('history-filter-month').value;
+            let histStudents = [...students].sort((a, b) => new Date(b.enrollDate) - new Date(a.enrollDate));
+            if (histFilter) histStudents = histStudents.filter(s => s.enrollDate.startsWith(histFilter));
+            if (searchTerm) histStudents = histStudents.filter(s => s.name.toLowerCase().includes(searchTerm));
+
+            const tbodyH = document.getElementById('history-table-body');
+            const emptyH = document.getElementById('history-empty');
+            tbodyH.innerHTML = '';
+            
+            if(histStudents.length === 0) {
+                emptyH.classList.remove('hidden');
+            } else {
+                emptyH.classList.add('hidden');
+                histStudents.forEach(s => {
+                    let tags = '';
+                    if(s.isFree) tags += `<span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 mr-1.5 shadow-sm" title="Free"></span>`;
+                    if(s.isFounding) tags += `<span class="inline-block w-2.5 h-2.5 rounded-full bg-purple-500 mr-1.5 shadow-sm" title="Founding"></span>`;
+                    if(s.needsKit) tags += `<span class="inline-block w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm" title="Kit Rental"></span>`;
+
+                    tbodyH.innerHTML += `
+                        <tr class="hover:bg-[#fff9e6] cursor-pointer border-b border-gray-100 transition-colors" onclick="window.showStudentDetails('${s.id}')">
+                            <td class="px-5 py-4 text-xs text-gray-500 font-bold">${s.enrollDate}</td>
+                            <td class="px-5 py-4 font-black text-[#292929] hover:text-[#E31837]">${s.name}</td>
+                            <td class="px-5 py-4 text-[10px] uppercase tracking-wider font-bold text-gray-500">${s.termStart}-${s.termEnd}</td>
+                            <td class="px-5 py-4 flex items-center h-full pt-5">${tags || '<span class="text-xs text-gray-300 font-bold">-</span>'}</td>
+                            <td class="px-5 py-4 text-right">
+                                <button class="text-[#E31837] hover:text-white p-2 bg-red-50 hover:bg-[#E31837] rounded-lg transition-colors"><i data-lucide="arrow-right" class="h-4 w-4 font-bold"></i></button>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            refreshIcons();
+        };
+
+        // Initialize UI values
+        document.getElementById('s-date').valueAsDate = new Date();
+        window.updateLiveFee();
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !document.getElementById('student-modal').classList.contains('hidden')) {
+                window.closeModal();
+            }
+        });
+
+    </script>
+</body>
+</html>
